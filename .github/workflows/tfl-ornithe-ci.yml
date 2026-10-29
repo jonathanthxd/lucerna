@@ -1,0 +1,59 @@
+name: TFL Ornithe compatibility CI
+
+on:
+  push:
+    branches:
+      - main
+      - "ci/**"
+      - "feat/**"
+      - "fix/**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tfl-lucerna-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ornithe-build:
+    name: Java 25 / Ornithe Gen2 / Argentum API
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Validate TFL integration contract
+        run: python3 tools/tfl_ci_contracts.py
+
+      - name: Build Lucerna (does not certify runtime compatibility)
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace clean build
+
+      - name: Verify built mod JAR metadata and mixins
+        run: python3 tools/tfl_ci_contracts.py --jar
+
+      - name: Publish build evidence
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lucerna-ornithe-gen2-experimental
+          path: build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Summarize limits
+        if: always()
+        run: |
+          echo '### TFL Lucerna validation' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Tests above cover repository metadata and Gradle build only.' >> "$GITHUB_STEP_SUMMARY"
+          echo '- NOT verified: Legacy LWJGL3, real Argentum renderer, TFL Core mixin compatibility, shaderpack rendering, GPU frame times.' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Never label CI artifacts as stable or automatically merge to main.' >> "$GITHUB_STEP_SUMMARY"
