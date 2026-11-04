@@ -73,6 +73,12 @@ final class ProgramCondition {
 
         String token = tokens.get(position++);
 
+        // packs also gate programs on [0 1] number options such as #define SSR 1
+        if (options.getOptionSet().getStringOptions().containsKey(token)) {
+            String value = options.getStringValueOrDefault(token);
+            return !value.matches("0+(\\.0*)?|false");
+        }
+
         return "true".equals(token) || (!"false".equals(token) && options.getBooleanValueOrDefault(token));
     }
 }
