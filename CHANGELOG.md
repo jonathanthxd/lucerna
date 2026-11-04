@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4
+
+- Skip shader passes that packs turn off with number options
+
 ## 0.1.3
 
 - Fix GL memory leaks when reloading shaders
