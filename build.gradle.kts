@@ -67,17 +67,20 @@ tasks.processResources {
     }
 }
 
-// Dependency-free regression suite; also runnable with tools/test-regressions.sh.
-val regressionChecks by tasks.registering(JavaExec::class) {
-    dependsOn(tasks.testClasses)
-    classpath = sourceSets.test.get().runtimeClasspath
+// These are executable dependency-free checks, not JUnit test classes.
+// A dedicated source set makes `check` run them without misconfiguring Gradle's Test task.
+val regression = sourceSets.create("regression") {
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += sourceSets.main.get().output
+}
+val regressionChecks = tasks.register<JavaExec>("regressionChecks") {
+    dependsOn(tasks.named(regression.classesTaskName))
+    classpath = regression.runtimeClasspath
     mainClass = "us.z1x.lucerna.gui.element.ListInteractionRegression"
 }
-tasks.check { dependsOn(regressionChecks) }
-
-val farTerrainContractChecks by tasks.registering(JavaExec::class) {
-    dependsOn(tasks.testClasses)
-    classpath = sourceSets.test.get().runtimeClasspath
+val farTerrainContractChecks = tasks.register<JavaExec>("farTerrainContractChecks") {
+    dependsOn(tasks.named(regression.classesTaskName))
+    classpath = regression.runtimeClasspath
     mainClass = "us.z1x.lucerna.api.farterrain.FarTerrainContractRegression"
 }
-tasks.check { dependsOn(farTerrainContractChecks) }
+tasks.check { dependsOn(regressionChecks, farTerrainContractChecks) }

@@ -1,5 +1,15 @@
 package us.z1x.lucerna.pipeline;
 
+import us.z1x.lucerna.api.farterrain.FarTerrainApi;
+import us.z1x.lucerna.api.farterrain.FarTerrainFrame;
+import us.z1x.lucerna.api.farterrain.FarTerrainMesh;
+import us.z1x.lucerna.compat.farterrain.FarTerrainState;
+import us.z1x.lucerna.compat.farterrain.FarTerrainGlScope;
+import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
+import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.BufferUtils;
+import java.nio.FloatBuffer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -17,7 +27,7 @@ import org.joml.Vector3d;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL11C;
-import org.lwjgl.opengl.GL15C;
+import GL15C;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL21C;
 import org.lwjgl.opengl.GL30C;
@@ -91,7 +101,7 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
 
     private final RenderTargets renderTargets;
     private final ProgramSet farTerrainPrograms;
-    private final us.z1x.lucerna.compat.farterrain.FarTerrainState farTerrain;
+    private final FarTerrainState farTerrain;
     private Pass farTerrainPass, farWaterPass;
 
     private final DepthTexture mainDepth;
@@ -216,8 +226,8 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
             DepthBufferFormat.DEPTH24, programs.getPackDirectives().getRenderTargetDirectives().getRenderTargetSettings(), programs.getPackDirectives());
 
         this.farTerrainPrograms = programs;
-        this.farTerrain = us.z1x.lucerna.api.farterrain.FarTerrainApi.enabled()
-            ? new us.z1x.lucerna.compat.farterrain.FarTerrainState(renderTargets) : null;
+        this.farTerrain = FarTerrainApi.enabled()
+            ? new FarTerrainState(renderTargets) : null;
 
         this.sunPathRotation = programs.getPackDirectives().getSunPathRotation();
 
@@ -617,26 +627,26 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
         return id != null ? id : PROGRAM_IDS[index];
     }
 
-    public us.z1x.lucerna.compat.farterrain.FarTerrainState getFarTerrainState() { return farTerrain; }
+    public FarTerrainState getFarTerrainState() { return farTerrain; }
 
-    public boolean hasFarTerrainProgram(us.z1x.lucerna.api.farterrain.FarTerrainApi.Phase phase) {
+    public boolean hasFarTerrainProgram(FarTerrainApi.Phase phase) {
         return farTerrain != null && !farTerrain.failed && farTerrainPrograms.get(
-            phase == us.z1x.lucerna.api.farterrain.FarTerrainApi.Phase.TERRAIN ? ProgramId.DhTerrain : ProgramId.DhWater).isPresent();
+            phase == FarTerrainApi.Phase.TERRAIN ? ProgramId.DhTerrain : ProgramId.DhWater).isPresent();
     }
 
-    public us.z1x.lucerna.api.farterrain.FarTerrainApi.Result renderFarTerrain(
-            us.z1x.lucerna.api.farterrain.FarTerrainApi.Phase phase,
-            us.z1x.lucerna.api.farterrain.FarTerrainFrame frame,
-            List<us.z1x.lucerna.api.farterrain.FarTerrainMesh> meshes) {
-        var unavailable = us.z1x.lucerna.api.farterrain.FarTerrainApi.Result.UNAVAILABLE;
+    public FarTerrainApi.Result renderFarTerrain(
+            FarTerrainApi.Phase phase,
+            FarTerrainFrame frame,
+            List<FarTerrainMesh> meshes) {
+        var unavailable = FarTerrainApi.Result.UNAVAILABLE;
         if (!hasFarTerrainProgram(phase)) return unavailable;
-        boolean water = phase == us.z1x.lucerna.api.farterrain.FarTerrainApi.Phase.WATER;
+        boolean water = phase == FarTerrainApi.Phase.WATER;
         if (!isRenderingWorld || isRenderingShadow || isRenderingFullScreenPass || isPostChain || celeritasTerrainRendering
                 || water == isBeforeTranslucent || (water ? farTerrain.waterDrawn || !farTerrain.terrainDrawn : farTerrain.terrainDrawn)) {
-            return us.z1x.lucerna.api.farterrain.FarTerrainApi.Result.WRONG_PHASE;
+            return FarTerrainApi.Result.WRONG_PHASE;
         }
         Pass previousPass = current;
-        try (var scope = new us.z1x.lucerna.compat.farterrain.FarTerrainGlScope()) {
+        try (var scope = new FarTerrainGlScope()) {
             beginPass(null);
             try {
                 farTerrain.setFrame(frame);
@@ -648,9 +658,9 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
                         source.getGeometrySource().orElse(null), source.getFragmentSource().orElseThrow(), gbufferTextureRenames);
                     ProgramBuilder builder = ProgramBuilder.begin(source.getName(), patched.get(PatchShaderType.VERTEX),
                         patched.get(PatchShaderType.GEOMETRY), patched.get(PatchShaderType.FRAGMENT), LucernaSamplers.WORLD_RESERVED_TEXTURE_UNITS);
-                    builder.uniformMatrix(us.z1x.lucerna.gl.uniform.UniformUpdateFrequency.CUSTOM, "lucernaDhProjectionInverse", () -> farTerrain.inverse);
-                    builder.uniformMatrix(us.z1x.lucerna.gl.uniform.UniformUpdateFrequency.CUSTOM, "lucernaNativeProjection", CapturedRenderingState.INSTANCE::getGbufferProjection);
-                    builder.uniform2i(us.z1x.lucerna.gl.uniform.UniformUpdateFrequency.CUSTOM, "lucernaViewport", () -> new org.joml.Vector2i(renderTargets.getCurrentWidth(), renderTargets.getCurrentHeight()));
+                    builder.uniformMatrix(UniformUpdateFrequency.CUSTOM, "lucernaDhProjectionInverse", () -> farTerrain.inverse);
+                    builder.uniformMatrix(UniformUpdateFrequency.CUSTOM, "lucernaNativeProjection", CapturedRenderingState.INSTANCE::getGbufferProjection);
+                    builder.uniform2i(UniformUpdateFrequency.CUSTOM, "lucernaViewport", () -> new org.joml.Vector2i(renderTargets.getCurrentWidth(), renderTargets.getCurrentHeight()));
                     builder.addDynamicSampler(renderTargets::getDepthTexture, "lucernaNativeDepth");
                     try {
                         pass = createPassInner(builder, source.getParent().getPack().getIdMap(), source.getDirectives(),
@@ -662,35 +672,35 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
                 farTerrain.drawing = true; // never sample the depth texture attached to the active framebuffer
                 if (water) farTerrain.waterDrawn = true; else farTerrain.terrainDrawn = true;
                 pass.use();
-                java.nio.FloatBuffer projection = org.lwjgl.BufferUtils.createFloatBuffer(16).put(frame.projection()); projection.flip();
-                java.nio.FloatBuffer model = org.lwjgl.BufferUtils.createFloatBuffer(16).put(frame.modelView()); model.flip();
-                org.lwjgl.opengl.GL11.glMatrixMode(org.lwjgl.opengl.GL11.GL_PROJECTION); org.lwjgl.opengl.GL11.glLoadMatrixf(projection);
-                org.lwjgl.opengl.GL11.glEnable(org.lwjgl.opengl.GL11.GL_DEPTH_TEST);
-                org.lwjgl.opengl.GL11.glDepthFunc(org.lwjgl.opengl.GL11.GL_LEQUAL);
-                org.lwjgl.opengl.GL11.glDepthMask(true);
-                org.lwjgl.opengl.GL11.glDisable(org.lwjgl.opengl.GL11.GL_SCISSOR_TEST);
-                org.lwjgl.opengl.GL11.glEnableClientState(org.lwjgl.opengl.GL11.GL_VERTEX_ARRAY);
-                org.lwjgl.opengl.GL11.glEnableClientState(org.lwjgl.opengl.GL11.GL_COLOR_ARRAY);
-                org.lwjgl.opengl.GL11.glEnableClientState(org.lwjgl.opengl.GL11.GL_NORMAL_ARRAY);
+                FloatBuffer projection = BufferUtils.createFloatBuffer(16).put(frame.projection()); projection.flip();
+                FloatBuffer model = BufferUtils.createFloatBuffer(16).put(frame.modelView()); model.flip();
+                GL11.glMatrixMode(GL11.GL_PROJECTION); GL11.glLoadMatrixf(projection);
+                GL11.glEnable(GL11.GL_DEPTH_TEST);
+                GL11.glDepthFunc(GL11.GL_LEQUAL);
+                GL11.glDepthMask(true);
+                GL11.glDisable(GL11.GL_SCISSOR_TEST);
+                GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+                GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
+                GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
                 for (var mesh : meshes) {
-                    org.lwjgl.opengl.GL11.glMatrixMode(org.lwjgl.opengl.GL11.GL_MODELVIEW);
-                    org.lwjgl.opengl.GL11.glLoadMatrixf(model);
-                    org.lwjgl.opengl.GL11.glTranslatef(mesh.x(), mesh.y(), mesh.z());
-                    org.lwjgl.opengl.GL15.glBindBuffer(org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER, mesh.vertexBuffer());
-                    org.lwjgl.opengl.GL11.glVertexPointer(3, org.lwjgl.opengl.GL11.GL_FLOAT, 52, 0L);
-                    org.lwjgl.opengl.GL11.glColorPointer(4, org.lwjgl.opengl.GL11.GL_FLOAT, 52, 12L);
-                    org.lwjgl.opengl.GL11.glNormalPointer(org.lwjgl.opengl.GL11.GL_FLOAT, 52, 28L);
-                    org.lwjgl.opengl.GL13.glClientActiveTexture(org.lwjgl.opengl.GL13.GL_TEXTURE1);
-                    org.lwjgl.opengl.GL11.glEnableClientState(org.lwjgl.opengl.GL11.GL_TEXTURE_COORD_ARRAY);
-                    org.lwjgl.opengl.GL11.glTexCoordPointer(2, org.lwjgl.opengl.GL11.GL_FLOAT, 52, 40L);
-                    org.lwjgl.opengl.GL13.glClientActiveTexture(org.lwjgl.opengl.GL13.GL_TEXTURE3);
-                    org.lwjgl.opengl.GL11.glEnableClientState(org.lwjgl.opengl.GL11.GL_TEXTURE_COORD_ARRAY);
-                    org.lwjgl.opengl.GL11.glTexCoordPointer(1, org.lwjgl.opengl.GL11.GL_FLOAT, 52, 48L);
-                    org.lwjgl.opengl.GL11.glDrawArrays(org.lwjgl.opengl.GL11.GL_TRIANGLES, 0, mesh.vertexCount());
+                    GL11.glMatrixMode(GL11.GL_MODELVIEW);
+                    GL11.glLoadMatrixf(model);
+                    GL11.glTranslatef(mesh.x(), mesh.y(), mesh.z());
+                    GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, mesh.vertexBuffer());
+                    GL11.glVertexPointer(3, GL11.GL_FLOAT, 52, 0L);
+                    GL11.glColorPointer(4, GL11.GL_FLOAT, 52, 12L);
+                    GL11.glNormalPointer(GL11.GL_FLOAT, 52, 28L);
+                    GL13.glClientActiveTexture(GL13.GL_TEXTURE1);
+                    GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+                    GL11.glTexCoordPointer(2, GL11.GL_FLOAT, 52, 40L);
+                    GL13.glClientActiveTexture(GL13.GL_TEXTURE3);
+                    GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+                    GL11.glTexCoordPointer(1, GL11.GL_FLOAT, 52, 48L);
+                    GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, mesh.vertexCount());
                 }
                 pass.stopUsing();
                 if (!water) farTerrain.copyOpaqueDepth();
-                return us.z1x.lucerna.api.farterrain.FarTerrainApi.Result.RENDERED;
+                return FarTerrainApi.Result.RENDERED;
             } finally {
                 if (water && farWaterPass != null) farWaterPass.stopUsing();
                 if (!water && farTerrainPass != null) farTerrainPass.stopUsing();
@@ -700,7 +710,7 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
         } catch (RuntimeException failure) {
             farTerrain.failed = true;
             Lucerna.logger.error("Disabling experimental DH integration after {} failure; reload the shader pack to retry", phase, failure);
-            return us.z1x.lucerna.api.farterrain.FarTerrainApi.Result.FAILED;
+            return FarTerrainApi.Result.FAILED;
         }
     }
 
@@ -1257,7 +1267,7 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
 
         prepareRenderTargets();
         if (farTerrain != null) {
-            try (var scope = new us.z1x.lucerna.compat.farterrain.FarTerrainGlScope()) {
+            try (var scope = new FarTerrainGlScope()) {
                 farTerrain.beginFrame(renderTargets);
             }
         }
