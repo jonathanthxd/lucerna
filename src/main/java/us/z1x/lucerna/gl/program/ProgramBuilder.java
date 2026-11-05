@@ -38,53 +38,38 @@ public class ProgramBuilder extends ProgramUniforms.Builder implements SamplerHo
             return new ProgramBuilder(name, pooled, reservedTextureUnits);
         }
 
-        GlShader vertex;
-        GlShader geometry;
-        GlShader fragment;
-
-        vertex = buildShader(ShaderType.VERTEX, name + ".vsh", vertexSource);
-
-        if (geometrySource != null) {
-            geometry = buildShader(ShaderType.GEOMETRY, name + ".gsh", geometrySource);
-        } else {
-            geometry = null;
+        GlShader vertex = null;
+        GlShader geometry = null;
+        GlShader fragment = null;
+        try {
+            vertex = buildShader(ShaderType.VERTEX, name + ".vsh", vertexSource);
+            if (geometrySource != null) geometry = buildShader(ShaderType.GEOMETRY, name + ".gsh", geometrySource);
+            fragment = buildShader(ShaderType.FRAGMENT, name + ".fsh", fragmentSource);
+            int programId = geometry != null
+                ? ProgramCreator.create(name, vertex, geometry, fragment)
+                : ProgramCreator.create(name, vertex, fragment);
+            return new ProgramBuilder(name, programId, reservedTextureUnits);
+        } finally {
+            if (vertex != null) vertex.destroy();
+            if (geometry != null) geometry.destroy();
+            if (fragment != null) fragment.destroy();
         }
-
-        fragment = buildShader(ShaderType.FRAGMENT, name + ".fsh", fragmentSource);
-
-        int programId;
-
-        if (geometry != null) {
-            programId = ProgramCreator.create(name, vertex, geometry, fragment);
-        } else {
-            programId = ProgramCreator.create(name, vertex, fragment);
-        }
-
-        vertex.destroy();
-
-        if (geometry != null) {
-            geometry.destroy();
-        }
-
-        fragment.destroy();
-
-        return new ProgramBuilder(name, programId, reservedTextureUnits);
     }
 
     public static ProgramBuilder beginCompute(String name, @Nullable String source, ImmutableSet<Integer> reservedTextureUnits) {
-
         if (!LucernaRenderSystem.supportsCompute()) {
-            throw new IllegalStateException("This PC does not support compute shaders, but it's attempting to be used???");
+            throw new IllegalStateException("Compute shader " + name + " requires unsupported GPU capabilities");
         }
-
         GlShader compute = buildShader(ShaderType.COMPUTE, name + ".csh", source);
-
-        int programId = ProgramCreator.create(name, compute);
-
-        compute.destroy();
-
-        return new ProgramBuilder(name, programId, reservedTextureUnits);
+        try {
+            return new ProgramBuilder(name, ProgramCreator.create(name, compute), reservedTextureUnits);
+        } finally {
+            compute.destroy();
+        }
     }
+
+    /** Release an unfinished builder after framebuffer/uniform setup fails. */
+    public void discard() { org.lwjgl.opengl.GL20.glDeleteProgram(program); }
 
     public Program build() {
         return new Program(program, super.buildUniforms(), this.samplers.build(), this.images.build());

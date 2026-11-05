@@ -26,24 +26,29 @@ public class GlShader extends GlResource {
 
     private static int createShader(ShaderType type, String name, String src) {
         int handle = GL20.glCreateShader(type.id);
-        ShaderWorkarounds.safeShaderSource(handle, src);
-        GL20.glCompileShader(handle);
+        try {
+            ShaderWorkarounds.safeShaderSource(handle, src);
+            GL20.glCompileShader(handle);
 
-        GLDebug.nameObject(KHRDebug.GL_SHADER, handle, name + "(" + type.name().toLowerCase(Locale.ROOT) + ")");
+            GLDebug.nameObject(KHRDebug.GL_SHADER, handle, name + "(" + type.name().toLowerCase(Locale.ROOT) + ")");
 
-        String log = LucernaRenderSystem.getShaderInfoLog(handle);
+            String log = LucernaRenderSystem.getShaderInfoLog(handle);
 
-        if (!log.isEmpty()) {
-            LOGGER.warn("Shader compilation log for {}: {}", name, log);
+            if (!log.isEmpty()) {
+                LOGGER.warn("Shader compilation log for {}: {}", name, log);
+            }
+
+            int result = GL20.glGetShaderi(handle, GL20C.GL_COMPILE_STATUS);
+
+            if (result != GL20C.GL_TRUE) {
+                throw new RuntimeException("Shader compilation failed for " + name + ": " + log);
+            }
+
+            return handle;
+        } catch (RuntimeException | Error failure) {
+            GL20.glDeleteShader(handle);
+            throw failure;
         }
-
-        int result = GL20.glGetShaderi(handle, GL20C.GL_COMPILE_STATUS);
-
-        if (result != GL20C.GL_TRUE) {
-            throw new RuntimeException("Shader compilation failed, see log for details");
-        }
-
-        return handle;
     }
 
     public String getName() {
