@@ -58,6 +58,8 @@ public class ShaderPackSourceNames {
         }
 
         for (ProgramId programId : ProgramId.values()) {
+            if ((programId == ProgramId.DhTerrain || programId == ProgramId.DhWater)
+                && !us.z1x.lucerna.api.farterrain.FarTerrainApi.enabled()) continue;
             if (programId == ProgramId.Final || programId == ProgramId.Shadow) {
                 addComputeStarts(potentialFileNames, programId.getSourceName());
             } else {

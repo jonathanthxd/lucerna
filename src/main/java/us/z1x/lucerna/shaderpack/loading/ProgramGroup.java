@@ -7,6 +7,7 @@ public enum ProgramGroup {
     Gbuffers("gbuffers"),
     Deferred("deferred"),
     Composite("composite"),
+    DistantHorizons("dh"),
     Final("final")
     ;
 

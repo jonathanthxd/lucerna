@@ -25,6 +25,8 @@ public class ProgramSet {
     private final ComputeSource[][] setupCompute;
     private final ComputeSource[][] beginCompute;
 
+    private final ProgramSource dhTerrain;
+    private final ProgramSource dhWater;
     private final ProgramSource gbuffersBasic;
     private final ProgramSource gbuffersLine;
     private final ProgramSource gbuffersBeaconBeam;
@@ -84,6 +86,9 @@ public class ProgramSet {
             this.prepareCompute[i] = readComputeArray(directory, sourceProvider, "prepare" + ((i == 0) ? "" : i));
         }
 
+        boolean farTerrain = us.z1x.lucerna.api.farterrain.FarTerrainApi.enabled();
+        this.dhTerrain = farTerrain ? readProgramSource(directory, sourceProvider, "dh_terrain", this, shaderProperties) : null;
+        this.dhWater = farTerrain ? readProgramSource(directory, sourceProvider, "dh_water", this, shaderProperties) : null;
         this.gbuffersBasic = readProgramSource(directory, sourceProvider, "gbuffers_basic", this, shaderProperties);
         this.gbuffersLine = readProgramSource(directory, sourceProvider, "gbuffers_line", this, shaderProperties);
         this.gbuffersBeaconBeam = readProgramSource(directory, sourceProvider, "gbuffers_beaconbeam", this, shaderProperties);
@@ -190,6 +195,8 @@ public class ProgramSet {
         List<ProgramSource> programs = new ArrayList<>();
         List<ComputeSource> computes = new ArrayList<>();
 
+        programs.add(dhTerrain);
+        programs.add(dhWater);
         programs.add(shadow);
         programs.addAll(Arrays.asList(shadowcomp));
         programs.addAll(Arrays.asList(prepare));
@@ -344,6 +351,8 @@ public class ProgramSet {
 
     public Optional<ProgramSource> get(ProgramId programId) {
         switch (programId) {
+            case DhTerrain: return Optional.ofNullable(dhTerrain).flatMap(ProgramSource::requireValid);
+            case DhWater: return Optional.ofNullable(dhWater).flatMap(ProgramSource::requireValid);
             case Shadow: return getShadow();
             case Basic: return getGbuffersBasic();
             case Line: return gbuffersLine.requireValid();

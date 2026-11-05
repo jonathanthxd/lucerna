@@ -30,6 +30,7 @@ public class LucernaSamplers {
 
     public static void addRenderTargetSamplers(SamplerHolder samplers, Supplier<ImmutableSet<Integer>> flipped,
                                                RenderTargets renderTargets, boolean isFullscreenPass) {
+        us.z1x.lucerna.compat.farterrain.FarTerrainUniforms.addSamplers(samplers);
         // colortex0 to colortex3 can only be sampled in fullscreen passes
         int startIndex = isFullscreenPass ? 0 : 4;
 

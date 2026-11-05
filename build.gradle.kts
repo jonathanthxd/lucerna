@@ -74,3 +74,10 @@ val regressionChecks by tasks.registering(JavaExec::class) {
     mainClass = "us.z1x.lucerna.gui.element.ListInteractionRegression"
 }
 tasks.check { dependsOn(regressionChecks) }
+
+val farTerrainContractChecks by tasks.registering(JavaExec::class) {
+    dependsOn(tasks.testClasses)
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass = "us.z1x.lucerna.api.farterrain.FarTerrainContractRegression"
+}
+tasks.check { dependsOn(farTerrainContractChecks) }

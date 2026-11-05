@@ -116,6 +116,7 @@ public final class CommonUniforms {
         IdMapUniforms.addIdMapUniforms(updateNotifier, uniforms, idMap, directives.isOldHandLight());
         LucernaExclusiveUniforms.addLucernaExclusiveUniforms(uniforms);
         MatrixUniforms.addMatrixUniforms(uniforms, directives);
+        us.z1x.lucerna.compat.farterrain.FarTerrainUniforms.addUniforms(uniforms);
         CommonUniforms.generalCommonUniforms(uniforms, updateNotifier, directives);
     }
 

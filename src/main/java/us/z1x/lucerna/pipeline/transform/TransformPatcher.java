@@ -141,6 +141,9 @@ public class TransformPatcher {
                     CompatibilityTransformer.transformCore(transformer, tree, root, parameters);
                     renameCustomTextures(root, parameters.textureRenames);
                     switch (parameters.patch) {
+                        case FAR_TERRAIN:
+                            FarTerrainTransformer.transform(transformer, tree, root, parameters);
+                            break;
                         case ATTRIBUTES:
                             AttributeTransformer.transform(transformer, tree, root, (AttributeParameters) parameters);
                             break;
@@ -198,6 +201,10 @@ public class TransformPatcher {
         }
 
         return result;
+    }
+
+    public static Map<PatchShaderType, String> patchFarTerrain(String vertex, String geometry, String fragment, Map<String, String> textureRenames) {
+        return transform(vertex, geometry, fragment, withRenames(new Parameters(Patch.FAR_TERRAIN), textureRenames));
     }
 
     public static Map<PatchShaderType, String> patchAttributes(String vertex, String geometry, String fragment, InputAvailability inputs, Map<String, String> textureRenames) {
