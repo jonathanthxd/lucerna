@@ -1,11 +1,10 @@
 package us.z1x.lucerna.gl.uniform;
 
 import org.joml.Matrix4f;
-import org.joml.Vector2f;
 import org.joml.Vector2i;
-import org.joml.Vector3i;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.joml.Vector4f;
 
 import java.util.OptionalInt;
@@ -50,13 +49,6 @@ public interface LocationalUniformHolder extends UniformHolder {
     @Override
     default LocationalUniformHolder uniform1b(UniformUpdateFrequency updateFrequency, String name, BooleanSupplier value) {
         location(name, UniformType.INT).ifPresent(id -> addUniform(updateFrequency, new BooleanUniform(id, value)));
-
-        return this;
-    }
-
-    @Override
-    default LocationalUniformHolder uniform2f(UniformUpdateFrequency updateFrequency, String name, Supplier<Vector2f> value) {
-        location(name, UniformType.VEC2).ifPresent(id -> addUniform(updateFrequency, new Vector2Uniform(id, value)));
 
         return this;
     }

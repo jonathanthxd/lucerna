@@ -5,7 +5,6 @@
 
 package us.z1x.lucerna.gl;
 
-import us.z1x.lucerna.Iris;
 import org.lwjgl.opengl.AMDDebugOutput;
 import org.lwjgl.opengl.ARBDebugOutput;
 import org.lwjgl.opengl.GL;
@@ -16,6 +15,7 @@ import org.lwjgl.opengl.GLDebugMessageARBCallback;
 import org.lwjgl.opengl.GLDebugMessageCallback;
 import org.lwjgl.opengl.KHRDebug;
 import org.lwjgl.system.APIUtil;
+import us.z1x.lucerna.Lucerna;
 
 import java.io.PrintStream;
 import java.util.function.Consumer;
@@ -69,7 +69,7 @@ public final class GLDebug {
     public static int setupDebugMessageCallback(PrintStream stream) {
         GLCapabilities caps = GL.getCapabilities();
         if (caps.OpenGL43) {
-            Iris.logger.info("[GL] Using OpenGL 4.3 for error logging.");
+            Lucerna.logger.info("[GL] Using OpenGL 4.3 for error logging.");
             GLDebugMessageCallback proc = GLDebugMessageCallback.create((source, type, id, severity, length, message, userParam) -> {
                 stream.println("[LWJGL] OpenGL debug message");
                 printDetail(stream, "ID", String.format("0x%X", id));
@@ -85,13 +85,13 @@ public final class GLDebug {
             GL43C.glDebugMessageControl(4352, 4352, GL43C.GL_DEBUG_SEVERITY_NOTIFICATION, (int[])null, false);
             GL43C.glDebugMessageCallback(proc, 0L);
             if ((GL43C.glGetInteger(33310) & 2) == 0) {
-                Iris.logger.warn("[GL] Warning: A non-debug context may not produce any debug output.");
+                Lucerna.logger.warn("[GL] Warning: A non-debug context may not produce any debug output.");
                 GL43C.glEnable(37600);
                 return 2;
             }
             return 1;
         } else if (caps.GL_KHR_debug) {
-            Iris.logger.info("[GL] Using KHR_debug for error logging.");
+            Lucerna.logger.info("[GL] Using KHR_debug for error logging.");
             GLDebugMessageCallback proc = GLDebugMessageCallback.create((source, type, id, severity, length, message, userParam) -> {
                 stream.println("[LWJGL] OpenGL debug message");
                 printDetail(stream, "ID", String.format("0x%X", id));
@@ -107,13 +107,13 @@ public final class GLDebug {
             KHRDebug.glDebugMessageControl(4352, 4352, GL43C.GL_DEBUG_SEVERITY_NOTIFICATION, (int[])null, false);
             KHRDebug.glDebugMessageCallback(proc, 0L);
             if (caps.OpenGL30 && (GL43C.glGetInteger(33310) & 2) == 0) {
-                Iris.logger.warn("[GL] Warning: A non-debug context may not produce any debug output.");
+                Lucerna.logger.warn("[GL] Warning: A non-debug context may not produce any debug output.");
                 GL43C.glEnable(37600);
                 return 2;
             }
             return 1;
         } else if (caps.GL_ARB_debug_output) {
-            Iris.logger.info("[GL] Using ARB_debug_output for error logging.");
+            Lucerna.logger.info("[GL] Using ARB_debug_output for error logging.");
             GLDebugMessageARBCallback proc = GLDebugMessageARBCallback.create((source, type, id, severity, length, message, userParam) -> {
                 stream.println("[LWJGL] ARB_debug_output message");
                 printDetail(stream, "ID", String.format("0x%X", id));
@@ -130,7 +130,7 @@ public final class GLDebug {
             ARBDebugOutput.glDebugMessageCallbackARB(proc, 0L);
             return 1;
         } else if (caps.GL_AMD_debug_output) {
-            Iris.logger.info("[GL] Using AMD_debug_output for error logging.");
+            Lucerna.logger.info("[GL] Using AMD_debug_output for error logging.");
             GLDebugMessageAMDCallback proc = GLDebugMessageAMDCallback.create((id, category, severity, length, message, userParam) -> {
                 stream.println("[LWJGL] AMD_debug_output message");
                 printDetail(stream, "ID", String.format("0x%X", id));
@@ -146,30 +146,7 @@ public final class GLDebug {
             AMDDebugOutput.glDebugMessageCallbackAMD(proc, 0L);
             return 1;
         } else {
-            Iris.logger.info("[GL] No debug output implementation is available, cannot return debug info.");
-            return 0;
-        }
-    }
-
-    public static int disableDebugMessages() {
-        GLCapabilities caps = GL.getCapabilities();
-        if (caps.OpenGL43) {
-            GL43C.glDebugMessageCallback(null, 0L);
-            return 1;
-        } else if (caps.GL_KHR_debug) {
-            KHRDebug.glDebugMessageCallback(null, 0L);
-            if (caps.OpenGL30 && (GL43C.glGetInteger(33310) & 2) == 0) {
-                GL43C.glDisable(37600);
-            }
-            return 1;
-        } else if (caps.GL_ARB_debug_output) {
-            ARBDebugOutput.glDebugMessageCallbackARB(null, 0L);
-            return 1;
-        } else if (caps.GL_AMD_debug_output) {
-            AMDDebugOutput.glDebugMessageCallbackAMD(null, 0L);
-            return 1;
-        } else {
-            Iris.logger.info("[GL] No debug output implementation is available, cannot disable debug info.");
+            Lucerna.logger.info("[GL] No debug output implementation is available, cannot return debug info.");
             return 0;
         }
     }
@@ -187,7 +164,7 @@ public final class GLDebug {
     }
 
     private static String getDebugSource(int source) {
-        switch(source) {
+        switch (source) {
             case 33350:
                 return "API";
             case 33351:
@@ -206,7 +183,7 @@ public final class GLDebug {
     }
 
     private static String getDebugType(int type) {
-        switch(type) {
+        switch (type) {
             case 33356:
                 return "ERROR";
             case 33357:
@@ -227,7 +204,7 @@ public final class GLDebug {
     }
 
     private static String getDebugSeverity(int severity) {
-        switch(severity) {
+        switch (severity) {
             case 33387:
                 return "NOTIFICATION";
             case 37190:
@@ -242,7 +219,7 @@ public final class GLDebug {
     }
 
     private static String getSourceARB(int source) {
-        switch(source) {
+        switch (source) {
             case 33350:
                 return "API";
             case 33351:
@@ -261,7 +238,7 @@ public final class GLDebug {
     }
 
     private static String getTypeARB(int type) {
-        switch(type) {
+        switch (type) {
             case 33356:
                 return "ERROR";
             case 33357:
@@ -280,7 +257,7 @@ public final class GLDebug {
     }
 
     private static String getSeverityARB(int severity) {
-        switch(severity) {
+        switch (severity) {
             case 37190:
                 return "HIGH";
             case 37191:
@@ -293,7 +270,7 @@ public final class GLDebug {
     }
 
     private static String getCategoryAMD(int category) {
-        switch(category) {
+        switch (category) {
             case 37193:
                 return "API ERROR";
             case 37194:
@@ -316,7 +293,7 @@ public final class GLDebug {
     }
 
     private static String getSeverityAMD(int severity) {
-        switch(severity) {
+        switch (severity) {
             case 37190:
                 return "HIGH";
             case 37191:
@@ -332,8 +309,6 @@ public final class GLDebug {
 
     private static interface DebugState {
         void nameObject(int id, int object, String name);
-        void pushGroup(int id, String name);
-        void popGroup();
     }
 
     private static class KHRDebugState implements DebugState {
@@ -343,33 +318,11 @@ public final class GLDebug {
         public void nameObject(int id, int object, String name) {
             KHRDebug.glObjectLabel(id, object, name);
         }
-
-        @Override
-        public void pushGroup(int id, String name) {
-            KHRDebug.glPushDebugGroup(KHRDebug.GL_DEBUG_SOURCE_APPLICATION, id, name);
-            hasGroup = true;
-        }
-
-        @Override
-        public void popGroup() {
-            if (hasGroup) {
-                KHRDebug.glPopDebugGroup();
-                hasGroup = false;
-            }
-        }
     }
 
     private static class UnsupportedDebugState implements DebugState {
         @Override
         public void nameObject(int id, int object, String name) {
-        }
-
-        @Override
-        public void pushGroup(int id, String name) {
-        }
-
-        @Override
-        public void popGroup() {
         }
     }
 

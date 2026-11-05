@@ -1,16 +1,15 @@
 package us.z1x.lucerna.uniforms.custom.cached;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
-import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
-import us.z1x.lucerna.parsing.VectorType;
 import org.joml.Vector2f;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
+import us.z1x.lucerna.parsing.VectorType;
 
 import java.util.function.Supplier;
 
 public class Float2VectorCachedUniform extends VectorCachedUniform<Vector2f> {
 
-    public Float2VectorCachedUniform(String name, UniformUpdateFrequency updateFrequency, Supplier<Vector2f> supplier) {
-        super(name, updateFrequency, new Vector2f(), supplier);
+    public Float2VectorCachedUniform(String name, Supplier<Vector2f> supplier) {
+        super(name, new Vector2f(), supplier);
     }
 
     @Override
@@ -20,7 +19,7 @@ public class Float2VectorCachedUniform extends VectorCachedUniform<Vector2f> {
 
     @Override
     public void push(int location) {
-        IrisRenderSystem.uniform2f(location, this.cached.x, this.cached.y);
+        LucernaRenderSystem.uniform2f(location, this.cached.x, this.cached.y);
     }
 
     @Override

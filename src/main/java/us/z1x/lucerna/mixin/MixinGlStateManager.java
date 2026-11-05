@@ -1,15 +1,5 @@
 package us.z1x.lucerna.mixin;
 
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.gbuffer_overrides.state.StateTracker;
-import us.z1x.lucerna.gl.blending.AlphaTestStorage;
-import us.z1x.lucerna.gl.blending.BlendModeStorage;
-import us.z1x.lucerna.gl.blending.DepthColorStorage;
-import us.z1x.lucerna.gl.state.StateUpdateNotifiers;
-import us.z1x.lucerna.pipeline.WorldRenderingPipeline;
-import us.z1x.lucerna.samplers.IrisSamplers;
-import us.z1x.lucerna.texture.TextureInfoCache;
-import us.z1x.lucerna.texture.TextureTracker;
 import net.minecraft.client.render.platform.GlStateManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,6 +9,15 @@ import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.gbufferoverrides.state.StateTracker;
+import us.z1x.lucerna.gl.blending.AlphaTestStorage;
+import us.z1x.lucerna.gl.blending.BlendModeStorage;
+import us.z1x.lucerna.gl.state.StateUpdateNotifiers;
+import us.z1x.lucerna.pipeline.WorldRenderingPipeline;
+import us.z1x.lucerna.samplers.LucernaSamplers;
+import us.z1x.lucerna.texture.TextureInfoCache;
+import us.z1x.lucerna.texture.TextureTracker;
 
 @Mixin(GlStateManager.class)
 public class MixinGlStateManager {
@@ -63,7 +62,7 @@ public class MixinGlStateManager {
 
     @Unique
     private static void lucerna$updateInputs() {
-        WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
+        WorldRenderingPipeline pipeline = Lucerna.getPipelineManager().getPipelineNullable();
 
         if (pipeline != null) {
             pipeline.setInputs(StateTracker.INSTANCE.getInputs());
@@ -72,9 +71,9 @@ public class MixinGlStateManager {
 
     @Inject(method = "enableTexture", at = @At("HEAD"))
     private static void lucerna$onEnableTexture(CallbackInfo ci) {
-        if (texture == IrisSamplers.ALBEDO_TEXTURE_UNIT) {
+        if (texture == LucernaSamplers.ALBEDO_TEXTURE_UNIT) {
             StateTracker.INSTANCE.albedoSampler = true;
-        } else if (texture == IrisSamplers.LIGHTMAP_TEXTURE_UNIT) {
+        } else if (texture == LucernaSamplers.LIGHTMAP_TEXTURE_UNIT) {
             StateTracker.INSTANCE.lightmapSampler = true;
         } else {
             return;
@@ -85,9 +84,9 @@ public class MixinGlStateManager {
 
     @Inject(method = "disableTexture", at = @At("HEAD"))
     private static void lucerna$onDisableTexture(CallbackInfo ci) {
-        if (texture == IrisSamplers.ALBEDO_TEXTURE_UNIT) {
+        if (texture == LucernaSamplers.ALBEDO_TEXTURE_UNIT) {
             StateTracker.INSTANCE.albedoSampler = false;
-        } else if (texture == IrisSamplers.LIGHTMAP_TEXTURE_UNIT) {
+        } else if (texture == LucernaSamplers.LIGHTMAP_TEXTURE_UNIT) {
             StateTracker.INSTANCE.lightmapSampler = false;
         } else {
             return;
@@ -98,7 +97,7 @@ public class MixinGlStateManager {
 
     @Inject(method = "callList", at = @At("HEAD"))
     private static void lucerna$beforeCallList(int list, CallbackInfo ci) {
-        WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
+        WorldRenderingPipeline pipeline = Lucerna.getPipelineManager().getPipelineNullable();
 
         if (pipeline != null) {
             pipeline.syncProgram();
@@ -116,7 +115,7 @@ public class MixinGlStateManager {
         TextureInfoCache.INSTANCE.onDeleteTexture(id);
     }
 
-    @Inject(method = { "enableFog", "disableFog" }, at = @At("RETURN"))
+    @Inject(method = {"enableFog", "disableFog"}, at = @At("RETURN"))
     private static void lucerna$onFogToggle(CallbackInfo ci) {
         if (lucerna$fogToggleListener != null) {
             lucerna$fogToggleListener.run();
@@ -183,7 +182,7 @@ public class MixinGlStateManager {
         }
     }
 
-    @Inject(method = { "blendFunc", "blendFuncSeparate" }, at = @At("RETURN"))
+    @Inject(method = {"blendFunc", "blendFuncSeparate"}, at = @At("RETURN"))
     private static void lucerna$onBlendFunc(CallbackInfo ci) {
         if (lucerna$blendFuncListener != null) {
             lucerna$blendFuncListener.run();
@@ -210,22 +209,6 @@ public class MixinGlStateManager {
     private static void lucerna$alphaFuncLock(int function, float reference, CallbackInfo ci) {
         if (AlphaTestStorage.isAlphaTestLocked()) {
             AlphaTestStorage.deferAlphaFunc(function, reference);
-            ci.cancel();
-        }
-    }
-
-    @Inject(method = "depthMask", at = @At("HEAD"), cancellable = true)
-    private static void lucerna$depthMaskLock(boolean enable, CallbackInfo ci) {
-        if (DepthColorStorage.isDepthColorLocked()) {
-            DepthColorStorage.deferDepthEnable(enable);
-            ci.cancel();
-        }
-    }
-
-    @Inject(method = "colorMask", at = @At("HEAD"), cancellable = true)
-    private static void lucerna$colorMaskLock(boolean red, boolean green, boolean blue, boolean alpha, CallbackInfo ci) {
-        if (DepthColorStorage.isDepthColorLocked()) {
-            DepthColorStorage.deferColorMask(red, green, blue, alpha);
             ci.cancel();
         }
     }

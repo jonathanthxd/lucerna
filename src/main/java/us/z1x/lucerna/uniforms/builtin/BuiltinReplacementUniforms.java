@@ -1,9 +1,9 @@
 package us.z1x.lucerna.uniforms.builtin;
 
-import us.z1x.lucerna.Iris;
+import org.joml.Matrix4f;
+import us.z1x.lucerna.Lucerna;
 import us.z1x.lucerna.gl.uniform.UniformHolder;
 import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
-import org.joml.Matrix4f;
 
 public class BuiltinReplacementUniforms {
     // mimics the GL_TEXTURE matrix that GameRenderer sets on the lightmap unit
@@ -11,8 +11,8 @@ public class BuiltinReplacementUniforms {
 
     public static void addBuiltinReplacementUniforms(UniformHolder uniforms) {
         uniforms.uniformMatrix(UniformUpdateFrequency.ONCE, "iris_LightmapTextureMatrix", () -> {
-            Iris.logger.warn("A shader appears to require the lightmap texture matrix even after transformations have occurred");
-            Iris.logger.warn("Iris handles this correctly but it indicates that the shader is doing weird things with lightmap coordinates");
+            Lucerna.logger.warn("A shader appears to require the lightmap texture matrix even after transformations have occurred");
+            Lucerna.logger.warn("Lucerna handles this correctly but it indicates that the shader is doing weird things with lightmap coordinates");
 
             return lightmapTextureMatrix;
         });

@@ -1,6 +1,5 @@
 package us.z1x.lucerna.pipeline;
 
-import us.z1x.lucerna.uniforms.CapturedRenderingState;
 import net.minecraft.client.render.platform.GlStateManager;
 import net.minecraft.client.render.vertex.BufferBuilder;
 import net.minecraft.client.render.vertex.DefaultVertexFormat;
@@ -8,6 +7,7 @@ import net.minecraft.client.render.vertex.Tesselator;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import us.z1x.lucerna.uniforms.CapturedRenderingState;
 
 import java.nio.ByteBuffer;
 
@@ -32,6 +32,10 @@ public final class CloudRenderer {
     private boolean top;
 
     private CloudRenderer() {
+    }
+
+    public void invalidate() {
+        texture = 0;
     }
 
     public void render(double x, double z, float height, float red, float green, float blue, int anaglyphRenderPass) {

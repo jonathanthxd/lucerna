@@ -1,7 +1,7 @@
 package us.z1x.lucerna.gl.image;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
 import org.lwjgl.opengl.GL42C;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 
 import java.util.function.IntSupplier;
 
@@ -18,6 +18,6 @@ public class ImageBinding {
 
     public void update() {
         // safe without a check, ImageLimits reports zero units when neither the ext nor gl 4.2 is present
-        IrisRenderSystem.bindImageTexture(imageUnit, textureID.getAsInt(), 0, true, 0, GL42C.GL_READ_WRITE, internalFormat);
+        LucernaRenderSystem.bindImageTexture(imageUnit, textureID.getAsInt(), 0, true, 0, GL42C.GL_READ_WRITE, internalFormat);
     }
 }

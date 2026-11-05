@@ -2,13 +2,9 @@ package us.z1x.lucerna.texture;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import us.z1x.lucerna.gl.IrisRenderSystem;
 import net.minecraft.client.render.platform.GlStateManager;
-import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20C;
-
-import java.nio.IntBuffer;
 
 public class TextureInfoCache {
     public static final TextureInfoCache INSTANCE = new TextureInfoCache();
@@ -25,17 +21,6 @@ public class TextureInfoCache {
             cache.put(id, info);
         }
         return info;
-    }
-
-    public void onTexImage2D(int target, int level, int internalformat, int width, int height, int border,
-                             int format, int type, @Nullable IntBuffer pixels) {
-        if (level == 0) {
-            int id = IrisRenderSystem.getActiveTextureName();
-            TextureInfo info = getInfo(id);
-            info.internalFormat = internalformat;
-            info.width = width;
-            info.height = height;
-        }
     }
 
     public void onDeleteTexture(int id) {

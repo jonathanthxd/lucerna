@@ -1,12 +1,12 @@
 package us.z1x.lucerna.gl.texture;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
-import us.z1x.lucerna.gl.framebuffer.GlFramebuffer;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL43C;
 import org.lwjgl.system.MemoryUtil;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
+import us.z1x.lucerna.gl.framebuffer.GlFramebuffer;
 
 public interface DepthCopyStrategy {
     class Gl20CopyTexture implements DepthCopyStrategy {
@@ -14,15 +14,10 @@ public interface DepthCopyStrategy {
         }
 
         @Override
-        public boolean needsDestFramebuffer() {
-            return false;
-        }
-
-        @Override
         public void copy(GlFramebuffer sourceFb, int sourceTexture, GlFramebuffer destFb, int destTexture, int width, int height) {
             sourceFb.bindAsReadBuffer();
 
-            IrisRenderSystem.copyTexSubImage2D(
+            LucernaRenderSystem.copyTexSubImage2D(
                 destTexture,
                 GL20C.GL_TEXTURE_2D,
                 0,
@@ -38,13 +33,8 @@ public interface DepthCopyStrategy {
         }
 
         @Override
-        public boolean needsDestFramebuffer() {
-            return true;
-        }
-
-        @Override
         public void copy(GlFramebuffer sourceFb, int sourceTexture, GlFramebuffer destFb, int destTexture, int width, int height) {
-            IrisRenderSystem.blitFramebuffer(sourceFb.getId(), destFb.getId(), 0, 0, width, height,
+            LucernaRenderSystem.blitFramebuffer(sourceFb.getId(), destFb.getId(), 0, 0, width, height,
                 0, 0, width, height,
                 GL30C.GL_DEPTH_BUFFER_BIT | GL30C.GL_STENCIL_BUFFER_BIT,
                 GL30C.GL_NEAREST);
@@ -53,11 +43,6 @@ public interface DepthCopyStrategy {
 
     class Gl43CopyImage implements DepthCopyStrategy {
         private Gl43CopyImage() {
-        }
-
-        @Override
-        public boolean needsDestFramebuffer() {
-            return false;
         }
 
         @Override
@@ -94,8 +79,6 @@ public interface DepthCopyStrategy {
             return new Gl20CopyTexture();
         }
     }
-
-    boolean needsDestFramebuffer();
 
     // may clobber the read and draw framebuffer bindings but must keep texture bindings
     // destFb can be null when needsDestFramebuffer is false

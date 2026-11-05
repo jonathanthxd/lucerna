@@ -10,8 +10,10 @@ import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.gl.IrisRenderSystem;
+import org.lwjgl.opengl.GL11C;
+import org.lwjgl.opengl.GL12C;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 import us.z1x.lucerna.gl.blending.AlphaTest;
 import us.z1x.lucerna.gl.blending.AlphaTestFunction;
 import us.z1x.lucerna.gl.blending.AlphaTestOverride;
@@ -27,8 +29,6 @@ import us.z1x.lucerna.shaderpack.option.ShaderPackOptions;
 import us.z1x.lucerna.shaderpack.preprocessor.PropertiesPreprocessor;
 import us.z1x.lucerna.shaderpack.texture.TextureStage;
 import us.z1x.lucerna.uniforms.custom.CustomUniforms;
-import org.lwjgl.opengl.GL11C;
-import org.lwjgl.opengl.GL12C;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -48,7 +48,6 @@ import java.util.function.Consumer;
 public class ShaderProperties {
     private CloudSetting cloudSetting = CloudSetting.DEFAULT;
     private OptionalBoolean oldHandLight = OptionalBoolean.DEFAULT;
-    private OptionalBoolean dynamicHandLight = OptionalBoolean.DEFAULT;
     private OptionalBoolean oldLighting = OptionalBoolean.DEFAULT;
     private OptionalBoolean shadowTerrain = OptionalBoolean.DEFAULT;
     private OptionalBoolean shadowTranslucent = OptionalBoolean.DEFAULT;
@@ -59,15 +58,9 @@ public class ShaderProperties {
     private OptionalBoolean sun = OptionalBoolean.DEFAULT;
     private OptionalBoolean moon = OptionalBoolean.DEFAULT;
     private OptionalBoolean vignette = OptionalBoolean.DEFAULT;
-    private OptionalBoolean backFaceSolid = OptionalBoolean.DEFAULT;
-    private OptionalBoolean backFaceCutout = OptionalBoolean.DEFAULT;
-    private OptionalBoolean backFaceCutoutMipped = OptionalBoolean.DEFAULT;
-    private OptionalBoolean backFaceTranslucent = OptionalBoolean.DEFAULT;
     private OptionalBoolean rainDepth = OptionalBoolean.DEFAULT;
     private OptionalBoolean concurrentCompute = OptionalBoolean.DEFAULT;
-    private OptionalBoolean beaconBeamDepth = OptionalBoolean.DEFAULT;
     private OptionalBoolean separateAo = OptionalBoolean.DEFAULT;
-    private OptionalBoolean frustumCulling = OptionalBoolean.DEFAULT;
     private OptionalBoolean shadowCulling = OptionalBoolean.DEFAULT;
     private OptionalBoolean shadowEnabled = OptionalBoolean.DEFAULT;
     private OptionalBoolean particlesBeforeDeferred = OptionalBoolean.DEFAULT;
@@ -107,7 +100,7 @@ public class ShaderProperties {
             preprocessed.load(new StringReader(preprocessedContents));
             original.load(new StringReader(contents));
         } catch (IOException e) {
-            Iris.logger.error("Error loading shaders.properties!", e);
+            Lucerna.logger.error("Error loading shaders.properties!", e);
         }
 
         preprocessed.forEach((keyObject, valueObject) -> {
@@ -127,12 +120,11 @@ public class ShaderProperties {
                 } else if ("fancy".equals(value)) {
                     cloudSetting = CloudSetting.FANCY;
                 } else {
-                    Iris.logger.error("Unrecognized clouds setting: " + value);
+                    Lucerna.logger.error("Unrecognized clouds setting: {}", value);
                 }
             }
 
             handleBooleanDirective(key, value, "oldHandLight", bool -> oldHandLight = bool);
-            handleBooleanDirective(key, value, "dynamicHandLight", bool -> dynamicHandLight = bool);
             handleBooleanDirective(key, value, "oldLighting", bool -> oldLighting = bool);
             handleBooleanDirective(key, value, "shadowTerrain", bool -> shadowTerrain = bool);
             handleBooleanDirective(key, value, "shadowTranslucent", bool -> shadowTranslucent = bool);
@@ -143,15 +135,9 @@ public class ShaderProperties {
             handleBooleanDirective(key, value, "sun", bool -> sun = bool);
             handleBooleanDirective(key, value, "moon", bool -> moon = bool);
             handleBooleanDirective(key, value, "vignette", bool -> vignette = bool);
-            handleBooleanDirective(key, value, "backFace.solid", bool -> backFaceSolid = bool);
-            handleBooleanDirective(key, value, "backFace.cutout", bool -> backFaceCutout = bool);
-            handleBooleanDirective(key, value, "backFace.cutoutMipped", bool -> backFaceCutoutMipped = bool);
-            handleBooleanDirective(key, value, "backFace.translucent", bool -> backFaceTranslucent = bool);
             handleBooleanDirective(key, value, "rain.depth", bool -> rainDepth = bool);
             handleBooleanDirective(key, value, "allowConcurrentCompute", bool -> concurrentCompute = bool);
-            handleBooleanDirective(key, value, "beacon.beam.depth", bool -> beaconBeamDepth = bool);
             handleBooleanDirective(key, value, "separateAo", bool -> separateAo = bool);
-            handleBooleanDirective(key, value, "frustum.culling", bool -> frustumCulling = bool);
             handleBooleanDirective(key, value, "shadow.culling", bool -> shadowCulling = bool);
             handleBooleanDirective(key, value, "shadow.enabled", bool -> shadowEnabled = bool);
             handleBooleanDirective(key, value, "particles.before.deferred", bool -> particlesBeforeDeferred = bool);
@@ -163,7 +149,7 @@ public class ShaderProperties {
                 try {
                     scale = Float.parseFloat(value);
                 } catch (NumberFormatException e) {
-                    Iris.logger.error("Unable to parse scale directive for " + pass + ": " + value, e);
+                    Lucerna.logger.error("Unable to parse scale directive for {}: {}", pass, value, e);
                     return;
                 }
 
@@ -174,7 +160,7 @@ public class ShaderProperties {
                 String[] parts = value.split(" ");
 
                 if (parts.length != 2) {
-                    Iris.logger.error("Unable to parse size.buffer directive for " + pass + ": " + value);
+                    Lucerna.logger.error("Unable to parse size.buffer directive for {}: {}", pass, value);
                     return;
                 }
 
@@ -190,16 +176,16 @@ public class ShaderProperties {
                 String[] parts = value.split(" ");
 
                 if (parts.length > 2) {
-                    Iris.logger.warn("Weird alpha test directive for " + pass + " contains more parts than we expected: " + value);
+                    Lucerna.logger.warn("Weird alpha test directive for {} contains more parts than we expected: {}", pass, value);
                 } else if (parts.length < 2) {
-                    Iris.logger.error("Invalid alpha test directive for " + pass + ": " + value);
+                    Lucerna.logger.error("Invalid alpha test directive for {}: {}", pass, value);
                     return;
                 }
 
                 Optional<AlphaTestFunction> function = AlphaTestFunction.fromString(parts[0]);
 
                 if (!function.isPresent()) {
-                    Iris.logger.error("Unable to parse alpha test directive for " + pass + ", unknown alpha test function " + parts[0] + ": " + value);
+                    Lucerna.logger.error("Unable to parse alpha test directive for {}, unknown alpha test function {}: {}", pass, parts[0], value);
                     return;
                 }
 
@@ -208,7 +194,7 @@ public class ShaderProperties {
                 try {
                     reference = Float.parseFloat(parts[1]);
                 } catch (NumberFormatException e) {
-                    Iris.logger.error("Unable to parse alpha test directive for " + pass + ": " + value, e);
+                    Lucerna.logger.error("Unable to parse alpha test directive for {}: {}", pass, value, e);
                     return;
                 }
 
@@ -218,7 +204,7 @@ public class ShaderProperties {
             handlePassDirective("blend.", key, value, pass -> {
                 if (pass.contains(".")) {
 
-                    if (!IrisRenderSystem.supportsBufferBlending()) {
+                    if (!LucernaRenderSystem.supportsBufferBlending()) {
                         throw new RuntimeException("Buffer blending is not supported on this platform, however it was attempted to be used!");
                     }
 
@@ -283,7 +269,7 @@ public class ShaderProperties {
                 Optional<TextureStage> optionalTextureStage = TextureStage.parse(stageName);
 
                 if (!optionalTextureStage.isPresent()) {
-                    Iris.logger.warn("Unknown texture stage " + "\"" + stageName + "\"," + " ignoring custom texture directive for " + key);
+                    Lucerna.logger.warn("Unknown texture stage \"{}\", ignoring custom texture directive for {}", stageName, key);
                     return;
                 }
 
@@ -295,8 +281,12 @@ public class ShaderProperties {
 
                 // like iris, a raw texture gets its own sampler that replaces only declarations of its type, see TransformPatcher
                 if (parts.length > 1) {
-                    String type = parts[1].equals("TEXTURE_1D") ? "SAMPLER1D" : parts[1].equals("TEXTURE_3D") ? "SAMPLER3D"
-                        : parts[1].equals("TEXTURE_RECTANGLE") ? "SAMPLER2DRECT" : "SAMPLER2D";
+                    String type = switch (parts[1]) {
+                        case "TEXTURE_1D" -> "SAMPLER1D";
+                        case "TEXTURE_3D" -> "SAMPLER3D";
+                        case "TEXTURE_RECTANGLE" -> "SAMPLER2DRECT";
+                        default -> "SAMPLER2D";
+                    };
                     String customName = "customtex" + customTextureCount++;
                     customTexturePatching.computeIfAbsent(stage, _stage -> new Object2ObjectOpenHashMap<>()).put(type + " " + name, customName);
                     name = customName;
@@ -315,7 +305,7 @@ public class ShaderProperties {
             handlePassDirective("variable.", key, value, pass -> {
                 String[] parts = pass.split("\\.");
                 if (parts.length != 2) {
-                    Iris.logger.warn("Custom variables should take the form of `variable.<type>.<name> = <expression>. Ignoring " + key);
+                    Lucerna.logger.warn("Custom variables should take the form of `variable.<type>.<name> = <expression>. Ignoring {}", key);
                     return;
                 }
 
@@ -325,7 +315,7 @@ public class ShaderProperties {
             handlePassDirective("uniform.", key, value, pass -> {
                 String[] parts = pass.split("\\.");
                 if (parts.length != 2) {
-                    Iris.logger.warn("Custom uniforms should take the form of `uniform.<type>.<name> = <expression>. Ignoring " + key);
+                    Lucerna.logger.warn("Custom uniforms should take the form of `uniform.<type>.<name> = <expression>. Ignoring {}", key);
                     return;
                 }
 
@@ -342,7 +332,7 @@ public class ShaderProperties {
                 Optional<PixelType> type = parts.length > 3 ? PixelType.fromString(parts[3].toUpperCase(Locale.ROOT)) : Optional.empty();
 
                 if (parts.length < 7 || !format.isPresent() || !internalFormat.isPresent() || !type.isPresent()) {
-                    Iris.logger.error("Unable to parse image directive " + key + ": " + value);
+                    Lucerna.logger.error("Unable to parse image directive {}: {}", key, value);
                     return;
                 }
 
@@ -354,12 +344,12 @@ public class ShaderProperties {
                         images.add(new ImageInformation(name, samplerName, GL11C.GL_TEXTURE_2D, format.get(), internalFormat.get(), type.get(), 0, 0, 0, clear,
                             true, Float.parseFloat(parts[6]), Float.parseFloat(parts[7])));
                     } else {
-                        int target = parts.length == 7 ? GL11C.GL_TEXTURE_1D : parts.length == 8 ? GL11C.GL_TEXTURE_2D : GL12C.GL_TEXTURE_3D;
+                        int target = parts.length == 7 ? GL11C.GL_TEXTURE_1D : (parts.length == 8 ? GL11C.GL_TEXTURE_2D : GL12C.GL_TEXTURE_3D);
                         images.add(new ImageInformation(name, samplerName, target, format.get(), internalFormat.get(), type.get(), Integer.parseInt(parts[6]),
                             parts.length > 7 ? Integer.parseInt(parts[7]) : 1, parts.length > 8 ? Integer.parseInt(parts[8]) : 1, clear, false, 0, 0));
                     }
                 } catch (RuntimeException e) {
-                    Iris.logger.error("Unable to parse image directive " + key + ": " + value);
+                    Lucerna.logger.error("Unable to parse image directive {}: {}", key, value);
                 }
             });
 
@@ -375,7 +365,7 @@ public class ShaderProperties {
                             : new ShaderStorageInfo(size, false, 0.0F, 0.0F));
                     }
                 } catch (NumberFormatException e) {
-                    Iris.logger.error("Unable to parse buffer object directive " + key + ": " + value);
+                    Lucerna.logger.error("Unable to parse buffer object directive {}: {}", key, value);
                 }
             });
 
@@ -409,7 +399,7 @@ public class ShaderProperties {
         } else if ("false".equals(value)) {
             handler.accept(false);
         } else {
-            Iris.logger.warn("Unexpected value for boolean key " + key + " in shaders.properties: got " + value + ", but expected either true or false");
+            Lucerna.logger.warn("Unexpected value for boolean key {} in shaders.properties: got {}, but expected either true or false", key, value);
         }
     }
 
@@ -423,7 +413,7 @@ public class ShaderProperties {
         } else if ("false".equals(value)) {
             handler.accept(OptionalBoolean.FALSE);
         } else {
-            Iris.logger.warn("Unexpected value for boolean key " + key + " in shaders.properties: got " + value + ", but expected either true or false");
+            Lucerna.logger.warn("Unexpected value for boolean key {} in shaders.properties: got {}, but expected either true or false", key, value);
         }
     }
 
@@ -437,7 +427,7 @@ public class ShaderProperties {
 
             handler.accept(result);
         } catch (NumberFormatException nex) {
-            Iris.logger.warn("Unexpected value for integer key " + key + " in shaders.properties: got " + value + ", but expected an integer");
+            Lucerna.logger.warn("Unexpected value for integer key {} in shaders.properties: got {}, but expected an integer", key, value);
         }
 
         return true;
@@ -459,7 +449,7 @@ public class ShaderProperties {
 
                 handler.accept(affixStrippedKey, result);
             } catch (NumberFormatException nex) {
-                Iris.logger.warn("Unexpected value for integer key " + key + " in shaders.properties: got " + value + ", but expected an integer");
+                Lucerna.logger.warn("Unexpected value for integer key {} in shaders.properties: got {}, but expected an integer", key, value);
             }
 
             return true;
@@ -525,10 +515,6 @@ public class ShaderProperties {
         return oldHandLight;
     }
 
-    public OptionalBoolean getDynamicHandLight() {
-        return dynamicHandLight;
-    }
-
     public OptionalBoolean getOldLighting() {
         return oldLighting;
     }
@@ -569,36 +555,12 @@ public class ShaderProperties {
         return vignette;
     }
 
-    public OptionalBoolean getBackFaceSolid() {
-        return backFaceSolid;
-    }
-
-    public OptionalBoolean getBackFaceCutout() {
-        return backFaceCutout;
-    }
-
-    public OptionalBoolean getBackFaceCutoutMipped() {
-        return backFaceCutoutMipped;
-    }
-
-    public OptionalBoolean getBackFaceTranslucent() {
-        return backFaceTranslucent;
-    }
-
     public OptionalBoolean getRainDepth() {
         return rainDepth;
     }
 
-    public OptionalBoolean getBeaconBeamDepth() {
-        return beaconBeamDepth;
-    }
-
     public OptionalBoolean getSeparateAo() {
         return separateAo;
-    }
-
-    public OptionalBoolean getFrustumCulling() {
-        return frustumCulling;
     }
 
     public OptionalBoolean getShadowCulling() {

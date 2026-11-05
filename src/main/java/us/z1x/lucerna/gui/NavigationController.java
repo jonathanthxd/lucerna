@@ -1,21 +1,15 @@
 package us.z1x.lucerna.gui;
 
 import us.z1x.lucerna.gui.element.ShaderPackOptionList;
-import us.z1x.lucerna.shaderpack.option.menu.OptionMenuContainer;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 public class NavigationController {
-    private final OptionMenuContainer container;
     private ShaderPackOptionList optionList;
 
     private String currentScreen = null;
     private final Deque<String> history = new ArrayDeque<>();
-
-    public NavigationController(OptionMenuContainer container) {
-        this.container = container;
-    }
 
     public void back() {
         if (history.size() > 0) {

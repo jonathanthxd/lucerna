@@ -1,10 +1,24 @@
 package us.z1x.lucerna.shaderpack.materialmap;
 
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.minecraft.item.Item;
+import net.minecraft.resource.Identifier;
+
+import java.util.Map;
 import java.util.Objects;
 
 public class NamespacedId {
+    private static final Map<Item, NamespacedId> ITEMS = new Reference2ObjectOpenHashMap<>();
+
     private final String namespace;
     private final String name;
+
+    public static NamespacedId of(Item item) {
+        return ITEMS.computeIfAbsent(item, key -> {
+            Identifier id = Item.REGISTRY.getKey(key);
+            return new NamespacedId(id.getNamespace(), id.getPath());
+        });
+    }
 
     public NamespacedId(String combined) {
         int colonIdx = combined.indexOf(':');

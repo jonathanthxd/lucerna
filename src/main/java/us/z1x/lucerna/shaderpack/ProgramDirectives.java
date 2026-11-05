@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import org.jetbrains.annotations.Nullable;
 import us.z1x.lucerna.gl.blending.AlphaTestOverride;
 import us.z1x.lucerna.gl.blending.BlendModeOverride;
 import us.z1x.lucerna.gl.blending.BufferBlendInformation;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collections;

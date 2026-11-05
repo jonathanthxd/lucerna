@@ -1,8 +1,8 @@
 package us.z1x.lucerna.gl.uniform;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 
 import java.nio.FloatBuffer;
 import java.util.function.Supplier;
@@ -33,7 +33,7 @@ public class JomlMatrixUniform extends Uniform {
             cachedValue.get(buffer);
             buffer.rewind();
 
-            IrisRenderSystem.uniformMatrix4fv(location, false, buffer);
+            LucernaRenderSystem.uniformMatrix4fv(location, false, buffer);
         }
     }
 }

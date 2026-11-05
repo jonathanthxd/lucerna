@@ -1,19 +1,17 @@
 package us.z1x.lucerna.shaderpack;
 
 import com.google.common.collect.ImmutableMap;
-import us.z1x.lucerna.Iris;
+import us.z1x.lucerna.Lucerna;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.stream.Stream;
 
 public class LanguageMap {
@@ -42,7 +40,7 @@ public class LanguageMap {
                 try (InputStreamReader isr = new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8)) {
                     properties.load(isr);
                 } catch (IOException e) {
-                    Iris.logger.error("Failed to parse shader pack language file " + path, e);
+                    Lucerna.logger.error("Failed to parse shader pack language file {}", path, e);
                 }
 
                 ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
@@ -52,10 +50,6 @@ public class LanguageMap {
                 translationMaps.put(currentLangCode, builder.build());
             });
         }
-    }
-
-    public Set<String> getLanguages() {
-        return Collections.unmodifiableSet(translationMaps.keySet());
     }
 
     public Map<String, String> getTranslations(String language) {

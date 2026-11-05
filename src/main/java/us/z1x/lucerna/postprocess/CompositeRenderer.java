@@ -4,7 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import us.z1x.lucerna.gl.IrisRenderSystem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.render.platform.GlStateManager;
+import org.lwjgl.opengl.GL15C;
+import org.lwjgl.opengl.GL20C;
+import org.lwjgl.opengl.GL30C;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 import us.z1x.lucerna.gl.framebuffer.GlFramebuffer;
 import us.z1x.lucerna.gl.program.ComputeProgram;
 import us.z1x.lucerna.gl.program.Program;
@@ -17,23 +22,16 @@ import us.z1x.lucerna.pipeline.transform.PatchShaderType;
 import us.z1x.lucerna.pipeline.transform.TransformPatcher;
 import us.z1x.lucerna.rendertarget.RenderTarget;
 import us.z1x.lucerna.rendertarget.RenderTargets;
-import us.z1x.lucerna.samplers.IrisImages;
-import us.z1x.lucerna.samplers.IrisSamplers;
+import us.z1x.lucerna.samplers.LucernaImages;
+import us.z1x.lucerna.samplers.LucernaSamplers;
 import us.z1x.lucerna.shaderpack.ComputeSource;
 import us.z1x.lucerna.shaderpack.PackDirectives;
-import us.z1x.lucerna.shaderpack.PackRenderTargetDirectives;
 import us.z1x.lucerna.shaderpack.ProgramDirectives;
 import us.z1x.lucerna.shaderpack.ProgramSource;
-import us.z1x.lucerna.shaderpack.texture.TextureStage;
 import us.z1x.lucerna.shadows.ShadowRenderTargets;
 import us.z1x.lucerna.uniforms.CommonUniforms;
 import us.z1x.lucerna.uniforms.FrameUpdateNotifier;
 import us.z1x.lucerna.uniforms.custom.CustomUniforms;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.render.platform.GlStateManager;
-import org.lwjgl.opengl.GL15C;
-import org.lwjgl.opengl.GL20C;
-import org.lwjgl.opengl.GL30C;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -66,10 +64,6 @@ public class CompositeRenderer {
         this.renderTargets = renderTargets;
         this.customTextureIds = customTextureIds;
         this.textureRenames = textureRenames;
-
-        final PackRenderTargetDirectives renderTargetDirectives = packDirectives.getRenderTargetDirectives();
-        final Map<Integer, PackRenderTargetDirectives.RenderTargetSettings> renderTargetSettings =
-                renderTargetDirectives.getRenderTargetSettings();
 
         final ImmutableList.Builder<Pass> passes = ImmutableList.builder();
         final ImmutableSet.Builder<Integer> flippedAtLeastOnce = new ImmutableSet.Builder<>();
@@ -139,7 +133,6 @@ public class CompositeRenderer {
             pass.framebuffer = framebuffer;
             pass.viewportScale = directives.getViewportScale();
             pass.mipmappedBuffers = directives.getMipmappedBuffers();
-            pass.flippedAtLeastOnce = flippedAtLeastOnceSnapshot;
 
             passes.add(pass);
         }
@@ -147,7 +140,7 @@ public class CompositeRenderer {
         this.passes = passes.build();
         this.flippedAtLeastOnceFinal = flippedAtLeastOnce.build();
 
-        IrisRenderSystem.bindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
+        LucernaRenderSystem.bindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
     }
 
     public ImmutableSet<Integer> getFlippedAtLeastOnceFinal() {
@@ -182,7 +175,6 @@ public class CompositeRenderer {
         Program program;
         ComputeProgram[] computes;
         GlFramebuffer framebuffer;
-        ImmutableSet<Integer> flippedAtLeastOnce;
         ImmutableSet<Integer> stageReadsFromAlt;
         ImmutableSet<Integer> mipmappedBuffers;
         float viewportScale;
@@ -224,7 +216,7 @@ public class CompositeRenderer {
             }
 
             if (ranCompute) {
-                IrisRenderSystem.memoryBarrier(40);
+                LucernaRenderSystem.memoryBarrier(40);
             }
 
             Program.unbind();
@@ -256,7 +248,7 @@ public class CompositeRenderer {
         Minecraft.getInstance().getRenderTarget().bindWrite(true);
         ProgramUniforms.clearActiveUniforms();
         ProgramSamplers.clearActiveSamplers();
-        IrisRenderSystem.useProgram(0);
+        LucernaRenderSystem.useProgram(0);
 
         // unbinding these textures is needed for shader pack reloading
         for (int i = 0; i < SamplerLimits.get().getMaxTextureUnits(); i++) {
@@ -271,18 +263,18 @@ public class CompositeRenderer {
         int texture = readFromAlt ? target.getAltTexture() : target.getMainTexture();
 
         // mipmapping stays on after writes like optifine, the sampling mode resets each frame
-        IrisRenderSystem.generateMipmaps(texture, GL20C.GL_TEXTURE_2D);
+        LucernaRenderSystem.generateMipmaps(texture, GL20C.GL_TEXTURE_2D);
 
         int filter = GL20C.GL_LINEAR_MIPMAP_LINEAR;
         if (target.getInternalFormat().getPixelFormat().isInteger()) {
             filter = GL20C.GL_NEAREST_MIPMAP_NEAREST;
         }
 
-        IrisRenderSystem.texParameteri(texture, GL20C.GL_TEXTURE_2D, GL20C.GL_TEXTURE_MIN_FILTER, filter);
+        LucernaRenderSystem.texParameteri(texture, GL20C.GL_TEXTURE_2D, GL20C.GL_TEXTURE_MIN_FILTER, filter);
     }
 
     private Program createProgram(ProgramSource source, ImmutableSet<Integer> flipped, ImmutableSet<Integer> flippedAtLeastOnceSnapshot,
-                                                           Supplier<ShadowRenderTargets> shadowTargetsSupplier) {
+                                  Supplier<ShadowRenderTargets> shadowTargetsSupplier) {
         Map<PatchShaderType, String> transformed = TransformPatcher.patchComposite(
             source.getVertexSource().orElseThrow(NullPointerException::new),
             source.getGeometrySource().orElse(null),
@@ -297,7 +289,7 @@ public class CompositeRenderer {
 
         try {
             builder = ProgramBuilder.begin(source.getName(), vertex, geometry, fragment,
-                IrisSamplers.COMPOSITE_RESERVED_TEXTURE_UNITS);
+                LucernaSamplers.COMPOSITE_RESERVED_TEXTURE_UNITS);
         } catch (RuntimeException e) {
             throw new RuntimeException("Shader compilation failed!", e);
         }
@@ -306,15 +298,15 @@ public class CompositeRenderer {
 
         CommonUniforms.addCommonUniforms(builder, source.getParent().getPack().getIdMap(), source.getParent().getPackDirectives(), updateNotifier);
         customUniforms.assignTo(builder);
-        IrisSamplers.addRenderTargetSamplers(customTextureSamplerInterceptor, () -> flipped, renderTargets, true);
-        IrisImages.addRenderTargetImages(builder, () -> flipped, renderTargets);
+        LucernaSamplers.addRenderTargetSamplers(customTextureSamplerInterceptor, () -> flipped, renderTargets, true);
+        LucernaImages.addRenderTargetImages(builder, () -> flipped, renderTargets);
 
-        IrisSamplers.addNoiseSampler(customTextureSamplerInterceptor, noiseTexture);
-        IrisSamplers.addCompositeSamplers(customTextureSamplerInterceptor, renderTargets);
+        LucernaSamplers.addNoiseSampler(customTextureSamplerInterceptor, noiseTexture);
+        LucernaSamplers.addCompositeSamplers(customTextureSamplerInterceptor, renderTargets);
 
-        if (IrisSamplers.hasShadowSamplers(customTextureSamplerInterceptor)) {
-            IrisSamplers.addShadowSamplers(customTextureSamplerInterceptor, shadowTargetsSupplier.get());
-            IrisImages.addShadowColorImages(builder, shadowTargetsSupplier.get());
+        if (LucernaSamplers.hasShadowSamplers(customTextureSamplerInterceptor)) {
+            LucernaSamplers.addShadowSamplers(customTextureSamplerInterceptor, shadowTargetsSupplier.get());
+            LucernaImages.addShadowColorImages(builder, shadowTargetsSupplier.get());
         }
 
         centerDepthSampler.setUsage(builder.addDynamicSampler(centerDepthSampler::getCenterDepthTexture, "iris_centerDepthSmooth"));
@@ -333,7 +325,7 @@ public class CompositeRenderer {
                 ProgramBuilder builder;
 
                 try {
-                    builder = ProgramBuilder.beginCompute(source.getName(), TransformPatcher.patchCompute(source.getSource().get(), textureRenames), IrisSamplers.COMPOSITE_RESERVED_TEXTURE_UNITS);
+                    builder = ProgramBuilder.beginCompute(source.getName(), TransformPatcher.patchCompute(source.getSource().get(), textureRenames), LucernaSamplers.COMPOSITE_RESERVED_TEXTURE_UNITS);
                 } catch (RuntimeException e) {
                     throw new RuntimeException("Shader compilation failed!", e);
                 }
@@ -342,15 +334,15 @@ public class CompositeRenderer {
 
                 CommonUniforms.addCommonUniforms(builder, source.getParent().getPack().getIdMap(), source.getParent().getPackDirectives(), updateNotifier);
                 customUniforms.assignTo(builder);
-                IrisSamplers.addRenderTargetSamplers(customTextureSamplerInterceptor, () -> flipped, renderTargets, true);
-                IrisImages.addRenderTargetImages(builder, () -> flipped, renderTargets);
+                LucernaSamplers.addRenderTargetSamplers(customTextureSamplerInterceptor, () -> flipped, renderTargets, true);
+                LucernaImages.addRenderTargetImages(builder, () -> flipped, renderTargets);
 
-                IrisSamplers.addNoiseSampler(customTextureSamplerInterceptor, noiseTexture);
-                IrisSamplers.addCompositeSamplers(customTextureSamplerInterceptor, renderTargets);
+                LucernaSamplers.addNoiseSampler(customTextureSamplerInterceptor, noiseTexture);
+                LucernaSamplers.addCompositeSamplers(customTextureSamplerInterceptor, renderTargets);
 
-                if (IrisSamplers.hasShadowSamplers(customTextureSamplerInterceptor)) {
-                    IrisSamplers.addShadowSamplers(customTextureSamplerInterceptor, shadowTargetsSupplier.get());
-                    IrisImages.addShadowColorImages(builder, shadowTargetsSupplier.get());
+                if (LucernaSamplers.hasShadowSamplers(customTextureSamplerInterceptor)) {
+                    LucernaSamplers.addShadowSamplers(customTextureSamplerInterceptor, shadowTargetsSupplier.get());
+                    LucernaImages.addShadowColorImages(builder, shadowTargetsSupplier.get());
                 }
 
                 centerDepthSampler.setUsage(builder.addDynamicSampler(centerDepthSampler::getCenterDepthTexture, "iris_centerDepthSmooth"));

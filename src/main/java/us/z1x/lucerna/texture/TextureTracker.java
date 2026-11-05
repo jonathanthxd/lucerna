@@ -2,13 +2,13 @@ package us.z1x.lucerna.texture;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.gl.IrisRenderSystem;
-import us.z1x.lucerna.gl.state.StateUpdateNotifiers;
-import us.z1x.lucerna.pipeline.WorldRenderingPipeline;
 import net.minecraft.client.render.platform.GlStateManager;
 import net.minecraft.client.render.texture.AbstractTexture;
 import org.jetbrains.annotations.Nullable;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.gl.state.StateUpdateNotifiers;
+import us.z1x.lucerna.pipeline.WorldRenderingPipeline;
+import us.z1x.lucerna.texture.pbr.PBRTextureManager;
 
 public class TextureTracker {
     public static final TextureTracker INSTANCE = new TextureTracker();
@@ -44,16 +44,16 @@ public class TextureTracker {
             if (bindTextureListener != null) {
                 bindTextureListener.run();
             }
-            WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
+            WorldRenderingPipeline pipeline = Lucerna.getPipelineManager().getPipelineNullable();
             if (pipeline != null) {
                 pipeline.onBindTexture(id);
             }
-            IrisRenderSystem.bindTextureToUnit(0, id);
             lockBindCallback = false;
         }
     }
 
     public void onDeleteTexture(int id) {
         textures.remove(id);
+        PBRTextureManager.INSTANCE.onDeleteTexture(id);
     }
 }

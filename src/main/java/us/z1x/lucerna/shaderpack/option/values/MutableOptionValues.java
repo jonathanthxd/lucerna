@@ -1,6 +1,5 @@
 package us.z1x.lucerna.shaderpack.option.values;
 
-import com.google.common.collect.ImmutableMap;
 import us.z1x.lucerna.shaderpack.OptionalBoolean;
 import us.z1x.lucerna.shaderpack.option.OptionSet;
 
@@ -32,10 +31,6 @@ public class MutableOptionValues implements OptionValues {
         this.stringValues = new HashMap<>();
 
         this.addAll(values);
-    }
-
-    public OptionSet getOptions() {
-        return options;
     }
 
     public Map<String, Boolean> getBooleanValues() {
@@ -112,12 +107,6 @@ public class MutableOptionValues implements OptionValues {
     @Override
     public MutableOptionValues mutableCopy() {
         return new MutableOptionValues(options, new HashMap<>(booleanValues), new HashMap<>(stringValues));
-    }
-
-    @Override
-    public ImmutableOptionValues toImmutable() {
-        return new ImmutableOptionValues(options, ImmutableMap.copyOf(booleanValues),
-                ImmutableMap.copyOf(stringValues));
     }
 
     @Override

@@ -1,11 +1,10 @@
 package us.z1x.lucerna.gl.uniform;
 
-import us.z1x.lucerna.gl.state.ValueUpdateNotifier;
 import org.joml.Vector2i;
 import org.joml.Vector4f;
 import org.joml.Vector4i;
+import us.z1x.lucerna.gl.state.ValueUpdateNotifier;
 
-import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
@@ -14,18 +13,6 @@ public interface DynamicLocationalUniformHolder extends LocationalUniformHolder,
 
     default DynamicLocationalUniformHolder uniform1f(String name, FloatSupplier value, ValueUpdateNotifier notifier) {
         location(name, UniformType.FLOAT).ifPresent(id -> addDynamicUniform(new FloatUniform(id, value, notifier), notifier));
-
-        return this;
-    }
-
-    default DynamicLocationalUniformHolder uniform1f(String name, IntSupplier value, ValueUpdateNotifier notifier) {
-        location(name, UniformType.FLOAT).ifPresent(id -> addDynamicUniform(new FloatUniform(id, () -> (float) value.getAsInt(), notifier), notifier));
-
-        return this;
-    }
-
-    default DynamicLocationalUniformHolder uniform1f(String name, DoubleSupplier value, ValueUpdateNotifier notifier) {
-        location(name, UniformType.FLOAT).ifPresent(id -> addDynamicUniform(new FloatUniform(id, () -> (float) value.getAsDouble(), notifier), notifier));
 
         return this;
     }

@@ -29,10 +29,6 @@ public class FileNode {
         this.includes = findIncludes(currentDirectory, lines);
     }
 
-    public AbsolutePackPath getPath() {
-        return path;
-    }
-
     public ImmutableList<String> getLines() {
         return lines;
     }

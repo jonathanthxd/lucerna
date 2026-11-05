@@ -1,7 +1,7 @@
 package us.z1x.lucerna.shaderpack;
 
-import us.z1x.lucerna.shaderpack.loading.ProgramId;
 import org.jetbrains.annotations.Nullable;
+import us.z1x.lucerna.shaderpack.loading.ProgramId;
 
 import java.util.HashMap;
 import java.util.Map;

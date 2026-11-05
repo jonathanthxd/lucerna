@@ -1,6 +1,6 @@
 package us.z1x.lucerna.shaderpack;
 
-import us.z1x.lucerna.Iris;
+import us.z1x.lucerna.Lucerna;
 import us.z1x.lucerna.gl.blending.BlendModeOverride;
 import us.z1x.lucerna.shaderpack.include.AbsolutePackPath;
 import us.z1x.lucerna.shaderpack.loading.ProgramId;
@@ -259,7 +259,7 @@ public class ProgramSet {
         }
 
         packDirectives.getRenderTargetDirectives().getRenderTargetSettings().forEach((index, settings) ->
-            Iris.logger.debug("Render target settings for colortex" + index + ": " + settings));
+            Lucerna.logger.debug("Render target settings for colortex{}: {}", index, settings));
     }
 
     public Optional<ProgramSource> getShadow() {

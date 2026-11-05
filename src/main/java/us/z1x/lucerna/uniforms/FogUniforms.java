@@ -1,8 +1,8 @@
 package us.z1x.lucerna.uniforms;
 
+import net.minecraft.client.render.platform.GlStateManager;
 import us.z1x.lucerna.gl.state.StateUpdateNotifiers;
 import us.z1x.lucerna.gl.uniform.DynamicUniformHolder;
-import net.minecraft.client.render.platform.GlStateManager;
 
 public class FogUniforms {
     private FogUniforms() {

@@ -1,8 +1,8 @@
 package us.z1x.lucerna.shaderpack.option;
 
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.shaderpack.option.values.OptionValues;
 import org.jetbrains.annotations.Nullable;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.shaderpack.option.values.OptionValues;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -98,7 +98,7 @@ public class ProfileSet {
             } else if (optionSet.isBooleanOption(option)) {
                 builder.option(option, "true");
             } else {
-                Iris.logger.warn("Invalid pack option: " + option);
+                Lucerna.logger.warn("Invalid pack option: {}", option);
             }
         }
 

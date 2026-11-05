@@ -1,13 +1,13 @@
 package us.z1x.lucerna.pipeline;
 
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.block_rendering.BlockRenderingSettings;
-import us.z1x.lucerna.shaderpack.DimensionId;
-import us.z1x.lucerna.uniforms.SystemTimeUniforms;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.platform.GlStateManager;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20C;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.blockrendering.BlockRenderingSettings;
+import us.z1x.lucerna.shaderpack.DimensionId;
+import us.z1x.lucerna.uniforms.SystemTimeUniforms;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,11 +15,10 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public class PipelineManager {
-    private static PipelineManager instance;
     private final Function<DimensionId, WorldRenderingPipeline> pipelineFactory;
     private final Map<DimensionId, WorldRenderingPipeline> pipelinesPerDimension = new HashMap<>();
     private WorldRenderingPipeline pipeline = new FixedFunctionWorldRenderingPipeline();
-    private int versionCounterForSodiumShaderReload = 0;
+    private int versionCounterForCeleritasShaderReload = 0;
 
     public PipelineManager(Function<DimensionId, WorldRenderingPipeline> pipelineFactory) {
         this.pipelineFactory = pipelineFactory;
@@ -30,7 +29,7 @@ public class PipelineManager {
             SystemTimeUniforms.COUNTER.reset();
             SystemTimeUniforms.TIMER.reset();
 
-            Iris.logger.info("Creating pipeline for dimension {}", currentDimension);
+            Lucerna.logger.info("Creating pipeline for dimension {}", currentDimension);
             pipeline = pipelineFactory.apply(currentDimension);
             pipelinesPerDimension.put(currentDimension, pipeline);
 
@@ -58,22 +57,22 @@ public class PipelineManager {
     }
 
     // bumped on each destroy so cached chunk and entity programs know to reload
-    public int getVersionCounterForSodiumShaderReload() {
-        return versionCounterForSodiumShaderReload;
+    public int getVersionCounterForCeleritasShaderReload() {
+        return versionCounterForCeleritasShaderReload;
     }
 
     // re-prepare the pipeline right after this or the program state becomes inconsistent
     // see https://github.com/IrisShaders/Iris/issues/1330
     public void destroyPipeline() {
         pipelinesPerDimension.forEach((dimensionId, pipeline) -> {
-            Iris.logger.info("Destroying pipeline {}", dimensionId);
+            Lucerna.logger.info("Destroying pipeline {}", dimensionId);
             resetTextureState();
             pipeline.destroy();
         });
 
         pipelinesPerDimension.clear();
         pipeline = null;
-        versionCounterForSodiumShaderReload++;
+        versionCounterForCeleritasShaderReload++;
     }
 
     private void resetTextureState() {

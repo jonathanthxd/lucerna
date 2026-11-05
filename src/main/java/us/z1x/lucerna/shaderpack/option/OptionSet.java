@@ -1,7 +1,7 @@
 package us.z1x.lucerna.shaderpack.option;
 
 import com.google.common.collect.ImmutableMap;
-import us.z1x.lucerna.Iris;
+import us.z1x.lucerna.Lucerna;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,8 +54,8 @@ public class OptionSet {
             }
         }
 
-        public void addBooleanOption(OptionLocation location, BooleanOption option) {
-            addBooleanOption(new MergedBooleanOption(location, option));
+        public void addBooleanOption(BooleanOption option) {
+            addBooleanOption(new MergedBooleanOption(option));
         }
 
         public void addBooleanOption(MergedBooleanOption proposed) {
@@ -68,7 +68,7 @@ public class OptionSet {
                 merged = existing.merge(proposed);
 
                 if (merged == null) {
-                    Iris.logger.warn("Ignoring ambiguous boolean option " + option.getName());
+                    Lucerna.logger.warn("Ignoring ambiguous boolean option {}", option.getName());
                     booleanOptions.remove(option.getName());
                     return;
                 }
@@ -79,8 +79,8 @@ public class OptionSet {
             booleanOptions.put(option.getName(), merged);
         }
 
-        public void addStringOption(OptionLocation location, StringOption option) {
-            addStringOption(new MergedStringOption(location, option));
+        public void addStringOption(StringOption option) {
+            addStringOption(new MergedStringOption(option));
         }
 
         public void addStringOption(MergedStringOption proposed) {
@@ -93,7 +93,7 @@ public class OptionSet {
                 merged = existing.merge(proposed);
 
                 if (merged == null) {
-                    Iris.logger.warn("Ignoring ambiguous string option " + option.getName());
+                    Lucerna.logger.warn("Ignoring ambiguous string option {}", option.getName());
                     stringOptions.remove(option.getName());
                     return;
                 }

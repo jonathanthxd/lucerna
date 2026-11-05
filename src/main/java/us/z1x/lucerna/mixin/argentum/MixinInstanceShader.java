@@ -1,11 +1,11 @@
 package us.z1x.lucerna.mixin.argentum;
 
-import us.z1x.lucerna.compat.argentum.InstancedEntityPrograms;
 import org.joml.Matrix4fc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import us.z1x.lucerna.compat.argentum.InstancedEntityPrograms;
 
 @Mixin(targets = "dev.rdh.argentum.impl.render.entity.instancing.InstanceShader", remap = false)
 public class MixinInstanceShader {

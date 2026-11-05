@@ -99,7 +99,7 @@ public abstract class CustomTextureData {
         private final int sizeX;
 
         public RawData1D(byte[] content, InternalTextureFormat internalFormat,
-                          PixelFormat pixelFormat, PixelType pixelType, TextureFilteringData filteringData, int sizeX) {
+                         PixelFormat pixelFormat, PixelType pixelType, TextureFilteringData filteringData, int sizeX) {
             super(content, internalFormat, pixelFormat, pixelType, filteringData);
 
             this.sizeX = sizeX;
@@ -115,7 +115,7 @@ public abstract class CustomTextureData {
         int sizeY;
 
         public RawData2D(byte[] content, InternalTextureFormat internalFormat,
-                          PixelFormat pixelFormat, PixelType pixelType, TextureFilteringData filteringData, int sizeX, int sizeY) {
+                         PixelFormat pixelFormat, PixelType pixelType, TextureFilteringData filteringData, int sizeX, int sizeY) {
             super(content, internalFormat, pixelFormat, pixelType, filteringData);
 
             this.sizeX = sizeX;
@@ -137,7 +137,7 @@ public abstract class CustomTextureData {
         int sizeZ;
 
         public RawData3D(byte[] content, InternalTextureFormat internalFormat,
-                          PixelFormat pixelFormat, PixelType pixelType, TextureFilteringData filteringData, int sizeX, int sizeY, int sizeZ) {
+                         PixelFormat pixelFormat, PixelType pixelType, TextureFilteringData filteringData, int sizeX, int sizeY, int sizeZ) {
             super(content, internalFormat, pixelFormat, pixelType, filteringData);
 
             this.sizeX = sizeX;

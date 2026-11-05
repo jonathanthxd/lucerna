@@ -1,13 +1,13 @@
 package us.z1x.lucerna.gl.image;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 
 public class ImageLimits {
     private final int maxImageUnits;
     private static ImageLimits instance;
 
     private ImageLimits() {
-        this.maxImageUnits = IrisRenderSystem.getMaxImageUnits();
+        this.maxImageUnits = LucernaRenderSystem.getMaxImageUnits();
     }
 
     public int getMaxImageUnits() {

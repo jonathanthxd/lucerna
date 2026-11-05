@@ -1,20 +1,12 @@
 package us.z1x.lucerna.shaderpack.option;
 
-import com.google.common.collect.ImmutableSet;
 import org.jetbrains.annotations.Nullable;
 
 public class MergedBooleanOption {
     private final BooleanOption option;
-    private final ImmutableSet<OptionLocation> locations;
 
-    MergedBooleanOption(BooleanOption option, ImmutableSet<OptionLocation> locations) {
+    public MergedBooleanOption(BooleanOption option) {
         this.option = option;
-        this.locations = locations;
-    }
-
-    public MergedBooleanOption(OptionLocation location, BooleanOption option) {
-        this.option = option;
-        this.locations = ImmutableSet.of(location);
     }
 
     @Nullable
@@ -31,19 +23,10 @@ public class MergedBooleanOption {
             option = other.option;
         }
 
-        ImmutableSet.Builder<OptionLocation> mergedLocations = ImmutableSet.builder();
-
-        mergedLocations.addAll(this.locations);
-        mergedLocations.addAll(other.locations);
-
-        return new MergedBooleanOption(option, mergedLocations.build());
+        return new MergedBooleanOption(option);
     }
 
     public BooleanOption getOption() {
         return option;
-    }
-
-    public ImmutableSet<OptionLocation> getLocations() {
-        return locations;
     }
 }

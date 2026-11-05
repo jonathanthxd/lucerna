@@ -1,14 +1,14 @@
 package us.z1x.lucerna.rendertarget;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
-import us.z1x.lucerna.gl.texture.InternalTextureFormat;
-import us.z1x.lucerna.gl.texture.PixelFormat;
-import us.z1x.lucerna.gl.texture.PixelType;
 import net.minecraft.client.render.platform.GlStateManager;
 import org.joml.Vector2i;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL13C;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
+import us.z1x.lucerna.gl.texture.InternalTextureFormat;
+import us.z1x.lucerna.gl.texture.PixelFormat;
+import us.z1x.lucerna.gl.texture.PixelType;
 
 import java.nio.ByteBuffer;
 
@@ -52,14 +52,14 @@ public class RenderTarget {
     private void setupTexture(int texture, int width, int height, boolean allowsLinear) {
         resizeTexture(texture, width, height);
 
-        IrisRenderSystem.texParameteri(texture, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MIN_FILTER, allowsLinear ? GL11C.GL_LINEAR : GL11C.GL_NEAREST);
-        IrisRenderSystem.texParameteri(texture, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MAG_FILTER, allowsLinear ? GL11C.GL_LINEAR : GL11C.GL_NEAREST);
-        IrisRenderSystem.texParameteri(texture, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_WRAP_S, GL13C.GL_CLAMP_TO_EDGE);
-        IrisRenderSystem.texParameteri(texture, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_WRAP_T, GL13C.GL_CLAMP_TO_EDGE);
+        LucernaRenderSystem.texParameteri(texture, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MIN_FILTER, allowsLinear ? GL11C.GL_LINEAR : GL11C.GL_NEAREST);
+        LucernaRenderSystem.texParameteri(texture, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MAG_FILTER, allowsLinear ? GL11C.GL_LINEAR : GL11C.GL_NEAREST);
+        LucernaRenderSystem.texParameteri(texture, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_WRAP_S, GL13C.GL_CLAMP_TO_EDGE);
+        LucernaRenderSystem.texParameteri(texture, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_WRAP_T, GL13C.GL_CLAMP_TO_EDGE);
     }
 
     private void resizeTexture(int texture, int width, int height) {
-        IrisRenderSystem.texImage2D(texture, GL11C.GL_TEXTURE_2D, 0, internalFormat.getGlFormat(), width, height, 0, format.getGlFormat(), type.getGlFormat(), NULL_BUFFER);
+        LucernaRenderSystem.texImage2D(texture, GL11C.GL_TEXTURE_2D, 0, internalFormat.getGlFormat(), width, height, 0, format.getGlFormat(), type.getGlFormat(), NULL_BUFFER);
     }
 
     void resize(Vector2i textureScaleOverride) {
@@ -152,12 +152,6 @@ public class RenderTarget {
 
         public Builder setPixelFormat(PixelFormat pixelFormat) {
             this.format = pixelFormat;
-
-            return this;
-        }
-
-        public Builder setPixelType(PixelType pixelType) {
-            this.type = pixelType;
 
             return this;
         }

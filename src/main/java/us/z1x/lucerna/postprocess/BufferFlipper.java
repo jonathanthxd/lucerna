@@ -1,7 +1,6 @@
 package us.z1x.lucerna.postprocess;
 
 import com.google.common.collect.ImmutableSet;
-import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
@@ -21,10 +20,6 @@ public class BufferFlipper {
     // when flipped, write to main and read from alt, otherwise the reverse
     public boolean isFlipped(int target) {
         return flippedBuffers.contains(target);
-    }
-
-    public IntIterator getFlippedBuffers() {
-        return flippedBuffers.iterator();
     }
 
     public ImmutableSet<Integer> snapshot() {

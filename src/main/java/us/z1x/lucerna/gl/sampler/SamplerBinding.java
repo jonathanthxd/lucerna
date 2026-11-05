@@ -1,6 +1,6 @@
 package us.z1x.lucerna.gl.sampler;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 import us.z1x.lucerna.gl.state.ValueUpdateNotifier;
 
 import java.util.function.IntSupplier;
@@ -25,6 +25,6 @@ public class SamplerBinding {
     }
 
     private void updateSampler() {
-        IrisRenderSystem.bindTextureToUnit(textureUnit, texture.getAsInt());
+        LucernaRenderSystem.bindTextureToUnit(textureUnit, texture.getAsInt());
     }
 }

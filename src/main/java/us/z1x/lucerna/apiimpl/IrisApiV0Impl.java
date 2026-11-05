@@ -1,13 +1,11 @@
 package us.z1x.lucerna.apiimpl;
 
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.gui.screen.ShaderPackScreen;
-import us.z1x.lucerna.pipeline.FixedFunctionWorldRenderingPipeline;
-import us.z1x.lucerna.pipeline.WorldRenderingPipeline;
-import us.z1x.lucerna.shadows.ShadowRenderingState;
 import net.irisshaders.iris.api.v0.IrisApi;
 import net.irisshaders.iris.api.v0.IrisApiConfig;
 import net.minecraft.client.gui.screen.Screen;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.gui.screen.ShaderPackScreen;
+import us.z1x.lucerna.shadows.ShadowRenderingState;
 
 public class IrisApiV0Impl implements IrisApi {
     public static final IrisApiV0Impl INSTANCE = new IrisApiV0Impl();
@@ -20,13 +18,7 @@ public class IrisApiV0Impl implements IrisApi {
 
     @Override
     public boolean isShaderPackInUse() {
-        WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
-
-        if (pipeline == null) {
-            return false;
-        }
-
-        return !(pipeline instanceof FixedFunctionWorldRenderingPipeline);
+        return Lucerna.isShaderPipelineActive();
     }
 
     @Override
@@ -41,12 +33,11 @@ public class IrisApiV0Impl implements IrisApi {
 
     @Override
     public String getMainScreenLanguageKey() {
-        return "options.iris.shaderPackSelection";
+        return "options.lucerna.shaderPackSelection";
     }
 
     @Override
     public IrisApiConfig getConfig() {
         return CONFIG;
     }
-
 }

@@ -18,10 +18,6 @@ public class NonCullingFrustum implements Culler, ViewportProvider, Frustum {
         pos.set(cameraX, cameraY, cameraZ);
     }
 
-    public boolean canDetermineInvisible(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
-        return false;
-    }
-
     public boolean isVisible(Box box) {
         return true;
     }

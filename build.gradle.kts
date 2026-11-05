@@ -66,7 +66,3 @@ tasks.processResources {
         into("META-INF")
     }
 }
-
-tasks.withType<JavaCompile>().configureEach {
-    options.compilerArgs.addAll(listOf("-Xmaxerrs", "10000"))
-}

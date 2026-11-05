@@ -1,20 +1,20 @@
 package us.z1x.lucerna.uniforms;
 
 import it.unimi.dsi.fastutil.objects.Object2IntFunction;
-import us.z1x.lucerna.gl.uniform.UniformHolder;
-import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
-import us.z1x.lucerna.shaderpack.IdMap;
-import us.z1x.lucerna.shaderpack.materialmap.NamespacedId;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.living.player.LocalClientPlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.resource.Identifier;
+import us.z1x.lucerna.gl.uniform.UniformHolder;
+import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
+import us.z1x.lucerna.shaderpack.IdMap;
+import us.z1x.lucerna.shaderpack.materialmap.NamespacedId;
 
 import static us.z1x.lucerna.gl.uniform.UniformUpdateFrequency.PER_FRAME;
 
 public final class IdMapUniforms {
+    private static final NamespacedId AIR = new NamespacedId("minecraft", "air");
 
     private IdMapUniforms() {
     }
@@ -53,16 +53,15 @@ public final class IdMapUniforms {
 
             // 1.8.9 has no air item, but iris reports an empty hand as minecraft:air
             if (heldStack == null) {
-                intID = itemIdMap.applyAsInt(new NamespacedId("minecraft", "air"));
+                intID = itemIdMap.applyAsInt(AIR);
                 lightValue = 0;
                 return;
             }
 
             Item heldItem = heldStack.getItem();
 
-            Identifier heldItemId = Item.REGISTRY.getKey(heldItem);
-            intID = itemIdMap.applyAsInt(new NamespacedId(heldItemId.getNamespace(), heldItemId.getPath()));
-            lightValue = heldItem instanceof BlockItem ? ((BlockItem) heldItem).getBlock().getLight() : 0;
+            intID = itemIdMap.applyAsInt(NamespacedId.of(heldItem));
+            lightValue = heldItem instanceof BlockItem blockItem ? blockItem.getBlock().getLight() : 0;
         }
 
         public int getIntID() {

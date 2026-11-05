@@ -1,12 +1,12 @@
 package us.z1x.lucerna.shadows.frustum.fallback;
 
-import us.z1x.lucerna.shadows.frustum.BoxCuller;
 import net.minecraft.client.render.Culler;
 import net.minecraft.util.math.Box;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum;
 import org.joml.Vector3d;
+import us.z1x.lucerna.shadows.frustum.BoxCuller;
 
 public class BoxCullingFrustum implements Culler, ViewportProvider, Frustum {
     private final BoxCuller boxCuller;
@@ -24,10 +24,6 @@ public class BoxCullingFrustum implements Culler, ViewportProvider, Frustum {
         boxCuller.setPosition(cameraX, cameraY, cameraZ);
     }
 
-    public boolean canDetermineInvisible(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
-        return false;
-    }
-
     public boolean isVisible(Box box) {
         return !boxCuller.isCulled(box);
     }
@@ -41,15 +37,15 @@ public class BoxCullingFrustum implements Culler, ViewportProvider, Frustum {
 
     @Override
     public boolean testAab(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
-        return !boxCuller.isCulledSodium(minX, minY, minZ, maxX, maxY, maxZ);
+        return !boxCuller.isCulledCeleritas(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     @Override
     public int intersectAab(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
-        if (boxCuller.isCulledSodium(minX, minY, minZ, maxX, maxY, maxZ)) {
+        if (boxCuller.isCulledCeleritas(minX, minY, minZ, maxX, maxY, maxZ)) {
             return OUTSIDE;
         }
 
-        return boxCuller.isFullyInsideSodium(minX, minY, minZ, maxX, maxY, maxZ) ? FULLY_INSIDE : PARTIALLY_INSIDE;
+        return boxCuller.isFullyInsideCeleritas(minX, minY, minZ, maxX, maxY, maxZ) ? FULLY_INSIDE : PARTIALLY_INSIDE;
     }
 }

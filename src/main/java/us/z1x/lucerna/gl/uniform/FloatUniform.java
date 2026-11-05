@@ -1,6 +1,6 @@
 package us.z1x.lucerna.gl.uniform;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 import us.z1x.lucerna.gl.state.ValueUpdateNotifier;
 
 public class FloatUniform extends Uniform {
@@ -32,7 +32,7 @@ public class FloatUniform extends Uniform {
 
         if (cachedValue != newValue) {
             cachedValue = newValue;
-            IrisRenderSystem.uniform1f(location, newValue);
+            LucernaRenderSystem.uniform1f(location, newValue);
         }
     }
 }

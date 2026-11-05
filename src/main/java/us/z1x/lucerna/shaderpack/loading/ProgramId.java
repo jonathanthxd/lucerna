@@ -72,10 +72,6 @@ public enum ProgramId {
         this.defaultBlendOverride = defaultBlendOverride;
     }
 
-    public ProgramGroup getGroup() {
-        return group;
-    }
-
     public String getSourceName() {
         return sourceName;
     }

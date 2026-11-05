@@ -7,12 +7,18 @@
   "description": "Shader pack loader for Minecraft 1.8.9, ported from Iris",
   "authors": ["Z1xus"],
   "contributors": ["coderbot", "IMS212", "douira", "embeddedt"],
+  "contact": {
+    "issues": "https://github.com/Z1xus/lucerna/issues",
+    "sources": "https://github.com/Z1xus/lucerna"
+  },
   "license": "LGPL-3.0-only",
   "depends": {
     "minecraft": "1.8.9",
+    "fabricloader": ">=0.19.5",
+    "java": ">=25",
     "argentum": ">=1.0.2"
   },
   "icon": "assets/lucerna/icon.png",
   "accessWidener": "lucerna.classtweaker",
-  "mixins": ["lucerna.mixins.json"]
+  "mixins": ["mixins.lucerna.json"]
 }

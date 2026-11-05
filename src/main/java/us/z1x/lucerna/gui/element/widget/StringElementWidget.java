@@ -1,12 +1,12 @@
 package us.z1x.lucerna.gui.element.widget;
 
-import us.z1x.lucerna.Iris;
+import net.minecraft.text.Formatting;
+import us.z1x.lucerna.Lucerna;
 import us.z1x.lucerna.gui.GuiUtil;
 import us.z1x.lucerna.gui.NavigationController;
 import us.z1x.lucerna.gui.screen.ShaderPackScreen;
 import us.z1x.lucerna.shaderpack.option.StringOption;
 import us.z1x.lucerna.shaderpack.option.menu.OptionMenuStringOptionElement;
-import net.minecraft.text.Formatting;
 
 import java.util.List;
 
@@ -71,7 +71,7 @@ public class StringElementWidget extends BaseOptionElementWidget<OptionMenuStrin
     }
 
     protected void queue() {
-        Iris.getShaderPackOptionQueue().put(this.option.getName(), this.getValue());
+        Lucerna.getShaderPackOptionQueue().put(this.option.getName(), this.getValue());
     }
 
     @Override

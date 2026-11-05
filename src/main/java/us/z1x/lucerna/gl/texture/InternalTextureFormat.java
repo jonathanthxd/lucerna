@@ -1,6 +1,5 @@
 package us.z1x.lucerna.gl.texture;
 
-import us.z1x.lucerna.gl.GlVersion;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL31C;
@@ -9,68 +8,66 @@ import java.util.Optional;
 
 public enum InternalTextureFormat {
     // not in the spec, exposed because it is the default
-    RGBA(GL11C.GL_RGBA, GlVersion.GL_11, PixelFormat.RGBA),
-    R8(GL30C.GL_R8, GlVersion.GL_30, PixelFormat.RED),
-    RG8(GL30C.GL_RG8, GlVersion.GL_30, PixelFormat.RG),
-    RGB8(GL11C.GL_RGB8, GlVersion.GL_11, PixelFormat.RGB),
-    RGBA8(GL11C.GL_RGBA8, GlVersion.GL_11, PixelFormat.RGBA),
-    R8_SNORM(GL31C.GL_R8_SNORM, GlVersion.GL_31, PixelFormat.RED),
-    RG8_SNORM(GL31C.GL_RG8_SNORM, GlVersion.GL_31, PixelFormat.RG),
-    RGB8_SNORM(GL31C.GL_RGB8_SNORM, GlVersion.GL_31, PixelFormat.RGB),
-    RGBA8_SNORM(GL31C.GL_RGBA8_SNORM, GlVersion.GL_31, PixelFormat.RGBA),
-    R16(GL30C.GL_R16, GlVersion.GL_30, PixelFormat.RED),
-    RG16(GL30C.GL_RG16, GlVersion.GL_30, PixelFormat.RG),
-    RGB16(GL11C.GL_RGB16, GlVersion.GL_11, PixelFormat.RGB),
-    RGBA16(GL11C.GL_RGBA16, GlVersion.GL_11, PixelFormat.RGBA),
-    R16_SNORM(GL31C.GL_R16_SNORM, GlVersion.GL_31, PixelFormat.RED),
-    RG16_SNORM(GL31C.GL_RG16_SNORM, GlVersion.GL_31, PixelFormat.RG),
-    RGB16_SNORM(GL31C.GL_RGB16_SNORM, GlVersion.GL_31, PixelFormat.RGB),
-    RGBA16_SNORM(GL31C.GL_RGBA16_SNORM, GlVersion.GL_31, PixelFormat.RGBA),
-    R16F(GL30C.GL_R16F, GlVersion.GL_30, PixelFormat.RED),
-    RG16F(GL30C.GL_RG16F, GlVersion.GL_30, PixelFormat.RG),
-    RGB16F(GL30C.GL_RGB16F, GlVersion.GL_30, PixelFormat.RGB),
-    RGBA16F(GL30C.GL_RGBA16F, GlVersion.GL_30, PixelFormat.RGBA),
-    R32F(GL30C.GL_R32F, GlVersion.GL_30, PixelFormat.RED),
-    RG32F(GL30C.GL_RG32F, GlVersion.GL_30, PixelFormat.RG),
-    RGB32F(GL30C.GL_RGB32F, GlVersion.GL_30, PixelFormat.RGB),
-    RGBA32F(GL30C.GL_RGBA32F, GlVersion.GL_30, PixelFormat.RGBA),
-    R8I(GL30C.GL_R8I, GlVersion.GL_30, PixelFormat.RED_INTEGER),
-    RG8I(GL30C.GL_RG8I, GlVersion.GL_30, PixelFormat.RG_INTEGER),
-    RGB8I(GL30C.GL_RGB8I, GlVersion.GL_30, PixelFormat.RGB_INTEGER),
-    RGBA8I(GL30C.GL_RGBA8I, GlVersion.GL_30, PixelFormat.RGBA_INTEGER),
-    R8UI(GL30C.GL_R8UI, GlVersion.GL_30, PixelFormat.RED_INTEGER),
-    RG8UI(GL30C.GL_RG8UI, GlVersion.GL_30, PixelFormat.RG_INTEGER),
-    RGB8UI(GL30C.GL_RGB8UI, GlVersion.GL_30, PixelFormat.RGB_INTEGER),
-    RGBA8UI(GL30C.GL_RGBA8UI, GlVersion.GL_30, PixelFormat.RGBA_INTEGER),
-    R16I(GL30C.GL_R16I, GlVersion.GL_30, PixelFormat.RED_INTEGER),
-    RG16I(GL30C.GL_RG16I, GlVersion.GL_30, PixelFormat.RG_INTEGER),
-    RGB16I(GL30C.GL_RGB16I, GlVersion.GL_30, PixelFormat.RGB_INTEGER),
-    RGBA16I(GL30C.GL_RGBA16I, GlVersion.GL_30, PixelFormat.RGBA_INTEGER),
-    R16UI(GL30C.GL_R16UI, GlVersion.GL_30, PixelFormat.RED_INTEGER),
-    RG16UI(GL30C.GL_RG16UI, GlVersion.GL_30, PixelFormat.RG_INTEGER),
-    RGB16UI(GL30C.GL_RGB16UI, GlVersion.GL_30, PixelFormat.RGB_INTEGER),
-    RGBA16UI(GL30C.GL_RGBA16UI, GlVersion.GL_30, PixelFormat.RGBA_INTEGER),
-    R32I(GL30C.GL_R32I, GlVersion.GL_30, PixelFormat.RED_INTEGER),
-    RG32I(GL30C.GL_RG32I, GlVersion.GL_30, PixelFormat.RG_INTEGER),
-    RGB32I(GL30C.GL_RGB32I, GlVersion.GL_30, PixelFormat.RGB_INTEGER),
-    RGBA32I(GL30C.GL_RGBA32I, GlVersion.GL_30, PixelFormat.RGBA_INTEGER),
-    R32UI(GL30C.GL_R32UI, GlVersion.GL_30, PixelFormat.RED_INTEGER),
-    RG32UI(GL30C.GL_RG32UI, GlVersion.GL_30, PixelFormat.RG_INTEGER),
-    RGB32UI(GL30C.GL_RGB32UI, GlVersion.GL_30, PixelFormat.RGB_INTEGER),
-    RGBA32UI(GL30C.GL_RGBA32UI, GlVersion.GL_30, PixelFormat.RGBA_INTEGER),
-    R3_G3_B2(GL11C.GL_R3_G3_B2, GlVersion.GL_11, PixelFormat.RGB),
-    RGB5_A1(GL11C.GL_RGB5_A1, GlVersion.GL_11, PixelFormat.RGBA),
-    RGB10_A2(GL11C.GL_RGB10_A2, GlVersion.GL_11, PixelFormat.RGBA),
-    R11F_G11F_B10F(GL30C.GL_R11F_G11F_B10F, GlVersion.GL_30, PixelFormat.RGB),
-    RGB9_E5(GL30C.GL_RGB9_E5, GlVersion.GL_30, PixelFormat.RGB);
+    RGBA(GL11C.GL_RGBA, PixelFormat.RGBA),
+    R8(GL30C.GL_R8, PixelFormat.RED),
+    RG8(GL30C.GL_RG8, PixelFormat.RG),
+    RGB8(GL11C.GL_RGB8, PixelFormat.RGB),
+    RGBA8(GL11C.GL_RGBA8, PixelFormat.RGBA),
+    R8_SNORM(GL31C.GL_R8_SNORM, PixelFormat.RED),
+    RG8_SNORM(GL31C.GL_RG8_SNORM, PixelFormat.RG),
+    RGB8_SNORM(GL31C.GL_RGB8_SNORM, PixelFormat.RGB),
+    RGBA8_SNORM(GL31C.GL_RGBA8_SNORM, PixelFormat.RGBA),
+    R16(GL30C.GL_R16, PixelFormat.RED),
+    RG16(GL30C.GL_RG16, PixelFormat.RG),
+    RGB16(GL11C.GL_RGB16, PixelFormat.RGB),
+    RGBA16(GL11C.GL_RGBA16, PixelFormat.RGBA),
+    R16_SNORM(GL31C.GL_R16_SNORM, PixelFormat.RED),
+    RG16_SNORM(GL31C.GL_RG16_SNORM, PixelFormat.RG),
+    RGB16_SNORM(GL31C.GL_RGB16_SNORM, PixelFormat.RGB),
+    RGBA16_SNORM(GL31C.GL_RGBA16_SNORM, PixelFormat.RGBA),
+    R16F(GL30C.GL_R16F, PixelFormat.RED),
+    RG16F(GL30C.GL_RG16F, PixelFormat.RG),
+    RGB16F(GL30C.GL_RGB16F, PixelFormat.RGB),
+    RGBA16F(GL30C.GL_RGBA16F, PixelFormat.RGBA),
+    R32F(GL30C.GL_R32F, PixelFormat.RED),
+    RG32F(GL30C.GL_RG32F, PixelFormat.RG),
+    RGB32F(GL30C.GL_RGB32F, PixelFormat.RGB),
+    RGBA32F(GL30C.GL_RGBA32F, PixelFormat.RGBA),
+    R8I(GL30C.GL_R8I, PixelFormat.RED_INTEGER),
+    RG8I(GL30C.GL_RG8I, PixelFormat.RG_INTEGER),
+    RGB8I(GL30C.GL_RGB8I, PixelFormat.RGB_INTEGER),
+    RGBA8I(GL30C.GL_RGBA8I, PixelFormat.RGBA_INTEGER),
+    R8UI(GL30C.GL_R8UI, PixelFormat.RED_INTEGER),
+    RG8UI(GL30C.GL_RG8UI, PixelFormat.RG_INTEGER),
+    RGB8UI(GL30C.GL_RGB8UI, PixelFormat.RGB_INTEGER),
+    RGBA8UI(GL30C.GL_RGBA8UI, PixelFormat.RGBA_INTEGER),
+    R16I(GL30C.GL_R16I, PixelFormat.RED_INTEGER),
+    RG16I(GL30C.GL_RG16I, PixelFormat.RG_INTEGER),
+    RGB16I(GL30C.GL_RGB16I, PixelFormat.RGB_INTEGER),
+    RGBA16I(GL30C.GL_RGBA16I, PixelFormat.RGBA_INTEGER),
+    R16UI(GL30C.GL_R16UI, PixelFormat.RED_INTEGER),
+    RG16UI(GL30C.GL_RG16UI, PixelFormat.RG_INTEGER),
+    RGB16UI(GL30C.GL_RGB16UI, PixelFormat.RGB_INTEGER),
+    RGBA16UI(GL30C.GL_RGBA16UI, PixelFormat.RGBA_INTEGER),
+    R32I(GL30C.GL_R32I, PixelFormat.RED_INTEGER),
+    RG32I(GL30C.GL_RG32I, PixelFormat.RG_INTEGER),
+    RGB32I(GL30C.GL_RGB32I, PixelFormat.RGB_INTEGER),
+    RGBA32I(GL30C.GL_RGBA32I, PixelFormat.RGBA_INTEGER),
+    R32UI(GL30C.GL_R32UI, PixelFormat.RED_INTEGER),
+    RG32UI(GL30C.GL_RG32UI, PixelFormat.RG_INTEGER),
+    RGB32UI(GL30C.GL_RGB32UI, PixelFormat.RGB_INTEGER),
+    RGBA32UI(GL30C.GL_RGBA32UI, PixelFormat.RGBA_INTEGER),
+    R3_G3_B2(GL11C.GL_R3_G3_B2, PixelFormat.RGB),
+    RGB5_A1(GL11C.GL_RGB5_A1, PixelFormat.RGBA),
+    RGB10_A2(GL11C.GL_RGB10_A2, PixelFormat.RGBA),
+    R11F_G11F_B10F(GL30C.GL_R11F_G11F_B10F, PixelFormat.RGB),
+    RGB9_E5(GL30C.GL_RGB9_E5, PixelFormat.RGB);
 
     private final int glFormat;
-    private final GlVersion minimumGlVersion;
     private final PixelFormat expectedPixelFormat;
 
-    InternalTextureFormat(int glFormat, GlVersion minimumGlVersion, PixelFormat expectedPixelFormat) {
+    InternalTextureFormat(int glFormat, PixelFormat expectedPixelFormat) {
         this.glFormat = glFormat;
-        this.minimumGlVersion = minimumGlVersion;
         this.expectedPixelFormat = expectedPixelFormat;
     }
 
@@ -87,8 +84,4 @@ public enum InternalTextureFormat {
     }
 
     public PixelFormat getPixelFormat() { return expectedPixelFormat; }
-
-    public GlVersion getMinimumGlVersion() {
-        return minimumGlVersion;
-    }
 }

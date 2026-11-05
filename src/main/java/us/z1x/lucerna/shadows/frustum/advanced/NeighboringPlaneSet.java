@@ -14,5 +14,4 @@ public record NeighboringPlaneSet(int plane0, int plane1, int plane2, int plane3
     public static NeighboringPlaneSet forPlane(int planeIndex) {
         return TABLE[planeIndex >>> 1];
     }
-
 }

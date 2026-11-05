@@ -1,7 +1,7 @@
 package us.z1x.lucerna.shaderpack.materialmap;
 
-import us.z1x.lucerna.Iris;
 import org.jetbrains.annotations.NotNull;
+import us.z1x.lucerna.Lucerna;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -78,9 +78,8 @@ public class BlockEntry {
             String[] propertyParts = splitStates[index].split("=");
 
             if (propertyParts.length != 2) {
-                Iris.logger.warn("Warning: the block ID map entry \"" + entry + "\" could not be fully parsed:");
-                Iris.logger.warn("- Block state property filters must be of the form \"key=value\", but "
-                        + splitStates[index] + " is not of that form!");
+                Lucerna.logger.warn("Warning: the block ID map entry \"{}\" could not be fully parsed:", entry);
+                Lucerna.logger.warn("- Block state property filters must be of the form \"key=value\", but {} is not of that form!", splitStates[index]);
 
                 continue;
             }

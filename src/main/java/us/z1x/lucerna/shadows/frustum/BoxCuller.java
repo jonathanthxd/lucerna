@@ -26,8 +26,7 @@ public class BoxCuller {
     }
 
     public boolean isCulled(Box aabb) {
-        return isCulled((float) aabb.minX, (float) aabb.minY, (float) aabb.minZ,
-            (float) aabb.maxX, (float) aabb.maxY, (float) aabb.maxZ);
+        return isCulled(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ);
     }
 
     public boolean isCulled(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
@@ -42,7 +41,7 @@ public class BoxCuller {
         return maxZ < this.minAllowedZ || minZ > this.maxAllowedZ;
     }
 
-    public boolean isCulledSodium(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+    public boolean isCulledCeleritas(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
         if (maxX < -this.maxDistance || minX > this.maxDistance) {
             return true;
         }
@@ -55,7 +54,7 @@ public class BoxCuller {
     }
 
     // camera relative, true only when the whole box is inside the bounds on every axis so no sub-box can be culled
-    public boolean isFullyInsideSodium(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+    public boolean isFullyInsideCeleritas(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
         return minX >= -this.maxDistance && maxX <= this.maxDistance
             && minY >= -this.maxDistance && maxY <= this.maxDistance
             && minZ >= -this.maxDistance && maxZ <= this.maxDistance;

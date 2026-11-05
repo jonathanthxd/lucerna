@@ -1,7 +1,7 @@
 package us.z1x.lucerna.gl.blending;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
 import net.minecraft.client.render.platform.GlStateManager;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 
 public class BlendModeStorage {
     private static boolean originalBlendEnable;
@@ -45,10 +45,10 @@ public class BlendModeStorage {
         overriddenBuffers |= 1 << index;
 
         if (override == null) {
-            IrisRenderSystem.disableBufferBlend(index);
+            LucernaRenderSystem.disableBufferBlend(index);
         } else {
-            IrisRenderSystem.enableBufferBlend(index);
-            IrisRenderSystem.blendFuncSeparatei(index, override.getSrcRgb(), override.getDstRgb(), override.getSrcAlpha(), override.getDstAlpha());
+            LucernaRenderSystem.enableBufferBlend(index);
+            LucernaRenderSystem.blendFuncSeparatei(index, override.getSrcRgb(), override.getDstRgb(), override.getSrcAlpha(), override.getDstAlpha());
         }
 
         blendLocked = true;
@@ -84,12 +84,12 @@ public class BlendModeStorage {
             }
 
             if (originalBlendEnable) {
-                IrisRenderSystem.enableBufferBlend(index);
+                LucernaRenderSystem.enableBufferBlend(index);
             } else {
-                IrisRenderSystem.disableBufferBlend(index);
+                LucernaRenderSystem.disableBufferBlend(index);
             }
 
-            IrisRenderSystem.blendFuncSeparatei(index, originalBlend.getSrcRgb(), originalBlend.getDstRgb(), originalBlend.getSrcAlpha(), originalBlend.getDstAlpha());
+            LucernaRenderSystem.blendFuncSeparatei(index, originalBlend.getSrcRgb(), originalBlend.getDstRgb(), originalBlend.getSrcAlpha(), originalBlend.getDstAlpha());
         }
     }
 }

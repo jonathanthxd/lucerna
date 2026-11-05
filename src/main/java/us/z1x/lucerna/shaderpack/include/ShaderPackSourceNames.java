@@ -15,7 +15,7 @@ public class ShaderPackSourceNames {
     public static final ImmutableList<String> POTENTIAL_STARTS = findPotentialStarts();
 
     public static boolean findPresentSources(ImmutableList.Builder<AbsolutePackPath> starts, Path packRoot,
-                                          AbsolutePackPath directory, ImmutableList<String> candidates) throws IOException {
+                                             AbsolutePackPath directory, ImmutableList<String> candidates) throws IOException {
         Path directoryPath = directory.resolved(packRoot);
 
         if (!Files.exists(directoryPath)) {

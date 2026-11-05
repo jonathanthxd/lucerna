@@ -1,11 +1,11 @@
 package us.z1x.lucerna.uniforms;
 
-import us.z1x.lucerna.gl.uniform.UniformHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import us.z1x.lucerna.gl.uniform.UniformHolder;
 
 import static us.z1x.lucerna.gl.uniform.UniformUpdateFrequency.ONCE;
 import static us.z1x.lucerna.gl.uniform.UniformUpdateFrequency.PER_FRAME;
@@ -34,11 +34,11 @@ public class CameraUniforms {
         return client.options.viewDistance * 16;
     }
 
-    public static Vector3d getUnshiftedCameraPosition() {
+    public static Vector3d getUnshiftedCameraPosition(Vector3d dest) {
         Entity camera = client.getCamera();
         double tickDelta = CapturedRenderingState.INSTANCE.getTickDelta();
 
-        return new Vector3d(camera.prevX + (camera.x - camera.prevX) * tickDelta,
+        return dest.set(camera.prevX + (camera.x - camera.prevX) * tickDelta,
             camera.prevY + (camera.y - camera.prevY) * tickDelta,
             camera.prevZ + (camera.z - camera.prevZ) * tickDelta);
     }
@@ -51,6 +51,7 @@ public class CameraUniforms {
 
         private Vector3d previousCameraPosition = new Vector3d();
         private Vector3d currentCameraPosition = new Vector3d();
+        private final Vector3d unshifted = new Vector3d();
         private final Vector3d shift = new Vector3d();
         // unshifted positions split for precision, as modern iris provides them
         private final Vector3i currentInt = new Vector3i();
@@ -63,14 +64,15 @@ public class CameraUniforms {
         }
 
         private void update() {
-            Vector3d unshifted = getUnshiftedCameraPosition();
+            getUnshiftedCameraPosition(unshifted);
             previousInt.set(currentInt);
             previousFract.set(currentFract);
             currentInt.set((int) Math.floor(unshifted.x), (int) Math.floor(unshifted.y), (int) Math.floor(unshifted.z));
             currentFract.set((float) (unshifted.x - currentInt.x), (float) (unshifted.y - currentInt.y), (float) (unshifted.z - currentInt.z));
 
+            Vector3d recycled = previousCameraPosition;
             previousCameraPosition = currentCameraPosition;
-            currentCameraPosition = unshifted.add(shift);
+            currentCameraPosition = recycled.set(unshifted).add(shift);
 
             updateShift();
         }

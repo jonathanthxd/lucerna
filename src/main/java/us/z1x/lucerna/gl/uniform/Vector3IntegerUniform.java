@@ -1,7 +1,7 @@
 package us.z1x.lucerna.gl.uniform;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
 import org.joml.Vector3i;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 
 import java.util.function.Supplier;
 
@@ -23,7 +23,7 @@ public class Vector3IntegerUniform extends Uniform {
         if (!initialized || !newValue.equals(cachedValue)) {
             initialized = true;
             cachedValue.set(newValue);
-            IrisRenderSystem.uniform3i(location, newValue.x, newValue.y, newValue.z);
+            LucernaRenderSystem.uniform3i(location, newValue.x, newValue.y, newValue.z);
         }
     }
 }

@@ -1,6 +1,6 @@
 package us.z1x.lucerna.gl.uniform;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 import us.z1x.lucerna.gl.state.ValueUpdateNotifier;
 
 import java.util.function.IntSupplier;
@@ -34,7 +34,7 @@ public class IntUniform extends Uniform {
 
         if (cachedValue != newValue) {
             cachedValue = newValue;
-            IrisRenderSystem.uniform1i(location, newValue);
+            LucernaRenderSystem.uniform1i(location, newValue);
         }
     }
 }

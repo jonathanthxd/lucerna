@@ -15,10 +15,6 @@ public enum ProgramArrayId {
         this.numPrograms = numPrograms;
     }
 
-    public ProgramGroup getGroup() {
-        return group;
-    }
-
     public String getSourcePrefix() {
         return group.getBaseName();
     }

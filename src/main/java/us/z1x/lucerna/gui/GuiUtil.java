@@ -1,6 +1,5 @@
 package us.z1x.lucerna.gui;
 
-import us.z1x.lucerna.Iris;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiElement;
 import net.minecraft.client.render.TextRenderer;
@@ -9,6 +8,7 @@ import net.minecraft.client.sound.instance.SimpleSoundInstance;
 import net.minecraft.locale.I18n;
 import net.minecraft.resource.Identifier;
 import org.lwjgl.opengl.GL11;
+import us.z1x.lucerna.Lucerna;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public final class GuiUtil {
-    public static final Identifier IRIS_WIDGETS_TEX = new Identifier("iris", "textures/gui/widgets.png");
+    public static final Identifier WIDGETS_TEX = new Identifier(Lucerna.MODID, "textures/gui/widgets.png");
     private static final String ELLIPSIS = "...";
 
     private GuiUtil() {}
@@ -25,8 +25,8 @@ public final class GuiUtil {
         return Minecraft.getInstance();
     }
 
-    public static void bindIrisWidgetsTexture() {
-        client().getTextureManager().bind(IRIS_WIDGETS_TEX);
+    public static void bindWidgetsTexture() {
+        client().getTextureManager().bind(WIDGETS_TEX);
     }
 
     // textures use the vanilla widgets layout, max size is 398x20
@@ -35,7 +35,7 @@ public final class GuiUtil {
         int halfHeight = height / 2;
 
         // disabled, hovered and normal texture rows
-        int vOffset = disabled ? 46 : hovered ? 86 : 66;
+        int vOffset = disabled ? 46 : (hovered ? 86 : 66);
 
         GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
         GlStateManager.enableBlend();
@@ -76,7 +76,7 @@ public final class GuiUtil {
         }
 
         // shader packs use legacy language codes, fall back to english
-        return Iris.getCurrentPack().flatMap(pack -> Stream.of(client().options.language.toLowerCase(Locale.ROOT), "en_us")
+        return Lucerna.getCurrentPack().flatMap(pack -> Stream.of(client().options.language.toLowerCase(Locale.ROOT), "en_us")
                 .map(pack.getLanguageMap()::getTranslations)
                 .filter(Objects::nonNull)
                 .map(translations -> translations.get(key))

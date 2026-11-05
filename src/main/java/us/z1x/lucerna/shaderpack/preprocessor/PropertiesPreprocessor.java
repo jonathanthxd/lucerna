@@ -1,13 +1,13 @@
 package us.z1x.lucerna.shaderpack.preprocessor;
 
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.shaderpack.StringPair;
-import us.z1x.lucerna.shaderpack.option.ShaderPackOptions;
 import org.anarres.cpp.Feature;
 import org.anarres.cpp.LexerException;
 import org.anarres.cpp.Preprocessor;
 import org.anarres.cpp.StringLexerSource;
 import org.anarres.cpp.Token;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.shaderpack.StringPair;
+import us.z1x.lucerna.shaderpack.option.ShaderPackOptions;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ public class PropertiesPreprocessor {
     // Derived from ShaderProcessor.glslPreprocessSource, which is derived from GlShader from Canvas, licenced under LGPL
     public static String preprocessSource(String source, ShaderPackOptions shaderPackOptions, Iterable<StringPair> environmentDefines) {
         if (source.contains(PropertyCollectingListener.PROPERTY_MARKER)) {
-            throw new RuntimeException("Some shader author is trying to exploit internal Iris implementation details, stop!");
+            throw new RuntimeException("Some shader author is trying to exploit internal Lucerna implementation details, stop!");
         }
 
         List<String> booleanValues = getBooleanValues(shaderPackOptions);
@@ -40,7 +40,7 @@ public class PropertiesPreprocessor {
                 try {
                     pp.addMacro(name, value);
                 } catch (LexerException e) {
-                    Iris.logger.error("Failed to define the macro " + name, e);
+                    Lucerna.logger.error("Failed to define the macro {}", name, e);
                 }
             });
 
@@ -50,24 +50,6 @@ public class PropertiesPreprocessor {
         } catch (LexerException e) {
             throw new RuntimeException("Unexpected LexerException processing macros", e);
         }
-    }
-
-    public static String preprocessSource(String source, Iterable<StringPair> environmentDefines) {
-        if (source.contains(PropertyCollectingListener.PROPERTY_MARKER)) {
-            throw new RuntimeException("Some shader author is trying to exploit internal Iris implementation details, stop!");
-        }
-
-        Preprocessor preprocessor = new Preprocessor();
-
-        try {
-            for (StringPair envDefine : environmentDefines) {
-                preprocessor.addMacro(envDefine.getKey(), envDefine.getValue());
-            }
-        } catch (LexerException e) {
-            Iris.logger.error("Failed to define the environment macros", e);
-        }
-
-        return process(preprocessor, source);
     }
 
     private static String process(Preprocessor preprocessor, String source) {
@@ -100,7 +82,7 @@ public class PropertiesPreprocessor {
                 builder.append(tok.getText());
             }
         } catch (final Exception e) {
-            Iris.logger.error("Properties pre-processing failed", e);
+            Lucerna.logger.error("Properties pre-processing failed", e);
         }
 
         source = builder.toString();

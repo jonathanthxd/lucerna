@@ -1,33 +1,33 @@
 package us.z1x.lucerna.apiimpl;
 
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.config.IrisConfig;
 import net.irisshaders.iris.api.v0.IrisApiConfig;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.config.LucernaConfig;
 
 import java.io.IOException;
 
 public class IrisApiV0ConfigImpl implements IrisApiConfig {
     @Override
     public boolean areShadersEnabled() {
-        return Iris.getIrisConfig().areShadersEnabled();
+        return Lucerna.getLucernaConfig().areShadersEnabled();
     }
 
     @Override
     public void setShadersEnabledAndApply(boolean enabled) {
-        IrisConfig config = Iris.getIrisConfig();
+        LucernaConfig config = Lucerna.getLucernaConfig();
 
         config.setShadersEnabled(enabled);
 
         try {
             config.save();
         } catch (IOException e) {
-            Iris.logger.error("Error saving configuration file!", e);
+            Lucerna.logger.error("Error saving configuration file!", e);
         }
 
         try {
-            Iris.reload();
+            Lucerna.reloadInBackground();
         } catch (IOException e) {
-            Iris.logger.error("Error reloading shader pack while applying changes!", e);
+            Lucerna.logger.error("Error reloading shader pack while applying changes!", e);
         }
     }
 }

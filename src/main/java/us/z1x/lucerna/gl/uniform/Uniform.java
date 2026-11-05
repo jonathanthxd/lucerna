@@ -20,8 +20,4 @@ public abstract class Uniform {
     public final int getLocation() {
         return location;
     }
-
-    public final ValueUpdateNotifier getNotifier() {
-        return notifier;
-    }
 }

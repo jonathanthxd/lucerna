@@ -1,7 +1,7 @@
 package us.z1x.lucerna.gl.blending;
 
-import us.z1x.lucerna.Iris;
 import org.lwjgl.opengl.GL11;
+import us.z1x.lucerna.Lucerna;
 
 import java.util.Optional;
 
@@ -28,7 +28,7 @@ public enum BlendModeFunction {
         try {
             return Optional.of(BlendModeFunction.valueOf(name));
         } catch (IllegalArgumentException e) {
-            Iris.logger.warn("Invalid blend mode! " + name);
+            Lucerna.logger.warn("Invalid blend mode! {}", name);
             return Optional.empty();
         }
     }

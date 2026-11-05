@@ -19,28 +19,8 @@ public class RusticError {
         this.badLine = badLine;
     }
 
-    public String getSeverity() {
-        return severity;
-    }
-
     public String getMessage() {
         return message;
-    }
-
-    public String getDetailMessage() {
-        return detailMessage;
-    }
-
-    public String getFile() {
-        return file;
-    }
-
-    public int getLineNumber() {
-        return lineNumber;
-    }
-
-    public String getBadLine() {
-        return badLine;
     }
 
     @Override

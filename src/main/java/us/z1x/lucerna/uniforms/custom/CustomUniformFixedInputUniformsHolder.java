@@ -2,15 +2,20 @@ package us.z1x.lucerna.uniforms.custom;
 
 import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import kroppeb.stareval.function.Type;
-import us.z1x.lucerna.Iris;
+import org.joml.Matrix4f;
+import org.joml.Vector2i;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
+import org.joml.Vector3i;
+import org.joml.Vector4f;
+import us.z1x.lucerna.Lucerna;
 import us.z1x.lucerna.gl.uniform.FloatSupplier;
 import us.z1x.lucerna.gl.uniform.UniformHolder;
 import us.z1x.lucerna.gl.uniform.UniformType;
 import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
+import us.z1x.lucerna.stareval.function.Type;
 import us.z1x.lucerna.uniforms.custom.cached.BooleanCachedUniform;
 import us.z1x.lucerna.uniforms.custom.cached.CachedUniform;
-import us.z1x.lucerna.uniforms.custom.cached.Float2VectorCachedUniform;
 import us.z1x.lucerna.uniforms.custom.cached.Float3VectorCachedUniform;
 import us.z1x.lucerna.uniforms.custom.cached.Float4MatrixCachedUniform;
 import us.z1x.lucerna.uniforms.custom.cached.Float4VectorCachedUniform;
@@ -18,13 +23,6 @@ import us.z1x.lucerna.uniforms.custom.cached.FloatCachedUniform;
 import us.z1x.lucerna.uniforms.custom.cached.Int2VectorCachedUniform;
 import us.z1x.lucerna.uniforms.custom.cached.Int3VectorCachedUniform;
 import us.z1x.lucerna.uniforms.custom.cached.IntCachedUniform;
-import org.joml.Matrix4f;
-import org.joml.Vector2f;
-import org.joml.Vector2i;
-import org.joml.Vector3i;
-import org.joml.Vector3d;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import java.util.Collection;
 import java.util.Map;
@@ -56,12 +54,6 @@ public class CustomUniformFixedInputUniformsHolder {
         return this.inputVariables.get(name);
     }
 
-    public void updateAll() {
-        for (CachedUniform value : this.inputVariables.values()) {
-            value.update();
-        }
-    }
-
     public Collection<CachedUniform> getAll() {
         return this.inputVariables.values();
     }
@@ -71,7 +63,7 @@ public class CustomUniformFixedInputUniformsHolder {
 
         private Builder put(String name, CachedUniform uniform) {
             if (inputVariables.containsKey(name)) {
-                Iris.logger.warn("Duplicated fixed uniform supplied as inputs to the Custom uniform holder: " + name);
+                Lucerna.logger.warn("Duplicated fixed uniform supplied as inputs to the Custom uniform holder: {}", name);
                 return this;
             }
             inputVariables.put(name, uniform);
@@ -80,53 +72,48 @@ public class CustomUniformFixedInputUniformsHolder {
 
         @Override
         public Builder uniform1f(UniformUpdateFrequency updateFrequency, String name, FloatSupplier value) {
-            return this.put(name, new FloatCachedUniform(name, updateFrequency, value));
+            return this.put(name, new FloatCachedUniform(name, value));
         }
 
         @Override
         public Builder uniform1f(UniformUpdateFrequency updateFrequency, String name, IntSupplier value) {
-            return this.put(name, new FloatCachedUniform(name, updateFrequency, value::getAsInt));
+            return this.put(name, new FloatCachedUniform(name, value::getAsInt));
         }
 
         @Override
         public Builder uniform1f(UniformUpdateFrequency updateFrequency, String name, DoubleSupplier value) {
-            return this.put(name, new FloatCachedUniform(name, updateFrequency, () -> (float) value.getAsDouble()));
+            return this.put(name, new FloatCachedUniform(name, () -> (float) value.getAsDouble()));
         }
 
         @Override
         public Builder uniform1i(UniformUpdateFrequency updateFrequency, String name, IntSupplier value) {
-            return this.put(name, new IntCachedUniform(name, updateFrequency, value));
+            return this.put(name, new IntCachedUniform(name, value));
         }
 
         @Override
         public Builder uniform1b(UniformUpdateFrequency updateFrequency, String name, BooleanSupplier value) {
-            return this.put(name, new BooleanCachedUniform(name, updateFrequency, value));
-        }
-
-        @Override
-        public Builder uniform2f(UniformUpdateFrequency updateFrequency, String name, Supplier<Vector2f> value) {
-            return this.put(name, new Float2VectorCachedUniform(name, updateFrequency, value));
+            return this.put(name, new BooleanCachedUniform(name, value));
         }
 
         @Override
         public Builder uniform2i(UniformUpdateFrequency updateFrequency, String name, Supplier<Vector2i> value) {
-            return this.put(name, new Int2VectorCachedUniform(name, updateFrequency, value));
+            return this.put(name, new Int2VectorCachedUniform(name, value));
         }
 
         @Override
         public Builder uniform3i(UniformUpdateFrequency updateFrequency, String name, Supplier<Vector3i> value) {
-            return this.put(name, new Int3VectorCachedUniform(name, updateFrequency, value));
+            return this.put(name, new Int3VectorCachedUniform(name, value));
         }
 
         @Override
         public Builder uniform3f(UniformUpdateFrequency updateFrequency, String name, Supplier<Vector3f> value) {
-            return this.put(name, new Float3VectorCachedUniform(name, updateFrequency, value));
+            return this.put(name, new Float3VectorCachedUniform(name, value));
         }
 
         @Override
         public Builder uniformTruncated3f(UniformUpdateFrequency updateFrequency, String name, Supplier<Vector4f> value) {
             Vector3f held = new Vector3f();
-            return this.put(name, new Float3VectorCachedUniform(name, updateFrequency, () -> {
+            return this.put(name, new Float3VectorCachedUniform(name, () -> {
                 Vector4f vec = value.get();
                 held.set(vec.x(), vec.y(), vec.z());
                 return held;
@@ -136,7 +123,7 @@ public class CustomUniformFixedInputUniformsHolder {
         @Override
         public UniformHolder uniform3d(UniformUpdateFrequency updateFrequency, String name, Supplier<Vector3d> value) {
             Vector3f held = new Vector3f();
-            return this.put(name, new Float3VectorCachedUniform(name, updateFrequency, () -> {
+            return this.put(name, new Float3VectorCachedUniform(name, () -> {
                 Vector3d vec = value.get();
                 held.set(vec.x(), vec.y(), vec.z());
                 return held;
@@ -146,7 +133,7 @@ public class CustomUniformFixedInputUniformsHolder {
         @Override
         public UniformHolder uniform4f(UniformUpdateFrequency updateFrequency, String name, Supplier<Vector4f> value) {
             Vector4f held = new Vector4f();
-            return this.put(name, new Float4VectorCachedUniform(name, updateFrequency, () -> {
+            return this.put(name, new Float4VectorCachedUniform(name, () -> {
                 Vector4f vec = value.get();
                 held.set(vec.x(), vec.y(), vec.z(), vec.w());
                 return held;
@@ -156,7 +143,7 @@ public class CustomUniformFixedInputUniformsHolder {
         @Override
         public UniformHolder uniformMatrix(
             UniformUpdateFrequency updateFrequency, String name, Supplier<Matrix4f> value) {
-            return this.put(name, new Float4MatrixCachedUniform(name, updateFrequency, value));
+            return this.put(name, new Float4MatrixCachedUniform(name, value));
         }
 
         @Override
@@ -164,7 +151,7 @@ public class CustomUniformFixedInputUniformsHolder {
             UniformUpdateFrequency updateFrequency, String name, Supplier<float[]> value) {
             Matrix4f held = new Matrix4f();
 
-            return this.put(name, new Float4MatrixCachedUniform(name, updateFrequency, () -> {
+            return this.put(name, new Float4MatrixCachedUniform(name, () -> {
                 held.set(value.get());
                 return held;
             }));

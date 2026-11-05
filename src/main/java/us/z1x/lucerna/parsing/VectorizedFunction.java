@@ -1,11 +1,11 @@
 package us.z1x.lucerna.parsing;
 
-import kroppeb.stareval.expression.Expression;
-import kroppeb.stareval.expression.VariableExpression;
-import kroppeb.stareval.function.FunctionContext;
-import kroppeb.stareval.function.FunctionReturn;
-import kroppeb.stareval.function.Type;
-import kroppeb.stareval.function.TypedFunction;
+import us.z1x.lucerna.stareval.expression.Expression;
+import us.z1x.lucerna.stareval.expression.VariableExpression;
+import us.z1x.lucerna.stareval.function.FunctionContext;
+import us.z1x.lucerna.stareval.function.FunctionReturn;
+import us.z1x.lucerna.stareval.function.Type;
+import us.z1x.lucerna.stareval.function.TypedFunction;
 
 import java.util.Collection;
 

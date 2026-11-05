@@ -2,9 +2,9 @@ package us.z1x.lucerna.pipeline.transform;
 
 import io.github.douira.glsl_transformer.ast.node.Identifier;
 import io.github.douira.glsl_transformer.ast.node.Profile;
+import io.github.douira.glsl_transformer.ast.node.TranslationUnit;
 import io.github.douira.glsl_transformer.ast.node.Version;
 import io.github.douira.glsl_transformer.ast.node.VersionStatement;
-import io.github.douira.glsl_transformer.ast.node.TranslationUnit;
 import io.github.douira.glsl_transformer.ast.node.basic.ASTNode;
 import io.github.douira.glsl_transformer.ast.node.declaration.DeclarationMember;
 import io.github.douira.glsl_transformer.ast.node.declaration.FunctionParameter;
@@ -32,11 +32,11 @@ import io.github.douira.glsl_transformer.ast.transform.ASTInjectionPoint;
 import io.github.douira.glsl_transformer.ast.transform.ASTParser;
 import io.github.douira.glsl_transformer.ast.transform.Template;
 import io.github.douira.glsl_transformer.util.Type;
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.gl.shader.ShaderType;
-import us.z1x.lucerna.pipeline.PatchedShaderPrinter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.gl.shader.ShaderType;
+import us.z1x.lucerna.pipeline.PatchedShaderPrinter;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -125,8 +125,7 @@ public class CompatibilityTransformer {
     public static void transformEach(ASTParser t, TranslationUnit tree, Root root, Parameters parameters) {
         if (parameters.type == PatchShaderType.VERTEX) {
             if (root.replaceExpressionMatches(t, sildursWaterFract, "fract(worldpos.y + 0.01)")) {
-                Iris.logger.warn("Patched fract(worldpos.y + 0.001) to fract(worldpos.y + 0.01) to fix " +
-                    "waving water disconnecting from other water blocks; See https://github.com/IrisShaders/Iris/issues/509");
+                Lucerna.logger.warn("Patched fract(worldpos.y + 0.001) to fract(worldpos.y + 0.01) to fix waving water disconnecting from other water blocks; See https://github.com/IrisShaders/Iris/issues/509");
             }
         }
 
@@ -419,7 +418,7 @@ public class CompatibilityTransformer {
             Root prevRoot = prevTree.getRoot();
 
             if (prevRoot.identifierIndex.prefixQueryFlat(TAG_PREFIX).findAny().isPresent()) {
-                LOGGER.warn("The prefix tag " + TAG_PREFIX + " is used in the shader, bailing compatibility transformation.");
+                LOGGER.warn("The prefix tag {} is used in the shader, bailing compatibility transformation.", TAG_PREFIX);
                 return;
             }
 
@@ -470,10 +469,7 @@ public class CompatibilityTransformer {
                             }
 
                             if (inTypeSpecifier == null) {
-                                LOGGER.warn(
-                                        "The in declaration '" + name + "' in the " + currentType.glShaderType.name()
-                                                + " shader that has a missing corresponding out declaration in the previous stage "
-                                                + prevType.name() + " has a non-numeric type and could not be compatibility-patched. See debugging.md for more information.");
+                                LOGGER.warn("The in declaration '{}' in the {} shader that has a missing corresponding out declaration in the previous stage {} has a non-numeric type and could not be compatibility-patched. See debugging.md for more information.", name, currentType.glShaderType.name(), prevType.name());
                                 continue;
                             }
                             Type inType = inTypeSpecifier.type;
@@ -491,10 +487,7 @@ public class CompatibilityTransformer {
                             // mark as handled to prevent duplicates
                             outDeclarations.put(name, null);
 
-                            LOGGER.warn(
-                                    "The in declaration '" + name + "' in the " + currentType.glShaderType.name()
-                                            + " shader is missing a corresponding out declaration in the previous stage "
-                                            + prevType.name() + " and has been compatibility-patched. See debugging.md for more information.");
+                            LOGGER.warn("The in declaration '{}' in the {} shader is missing a corresponding out declaration in the previous stage {} and has been compatibility-patched. See debugging.md for more information.", name, currentType.glShaderType.name(), prevType.name());
                         }
 
                         // mismatched types, patch with a global variable and a cast
@@ -521,10 +514,7 @@ public class CompatibilityTransformer {
                             }
 
                             if (outType.getDimension() != inType.getDimension()) {
-                                LOGGER.warn(
-                                        "The in declaration '" + name + "' in the " + currentType.glShaderType.name()
-                                                + " shader has a mismatching dimensionality (scalar/vector/matrix) with the out declaration in the previous stage "
-                                                + prevType.name() + " and could not be compatibility-patched. See debugging.md for more information.");
+                                LOGGER.warn("The in declaration '{}' in the {} shader has a mismatching dimensionality (scalar/vector/matrix) with the out declaration in the previous stage {} and could not be compatibility-patched. See debugging.md for more information.", name, currentType.glShaderType.name(), prevType.name());
                                 continue;
                             }
 
@@ -581,12 +571,7 @@ public class CompatibilityTransformer {
 
                             outDeclarations.put(name, null);
 
-                            LOGGER.warn(
-                                    "The out declaration '" + name + "' in the " + prevType.name()
-                                            + " shader has a different type " + outType.getMostCompactName()
-                                            + " than the corresponding in declaration of type " + inType.getMostCompactName()
-                                            + " in the following stage " + currentType.glShaderType.name()
-                                            + " and has been compatibility-patched. See debugging.md for more information.");
+                            LOGGER.warn("The out declaration '{}' in the {} shader has a different type {} than the corresponding in declaration of type {} in the following stage {} and has been compatibility-patched. See debugging.md for more information.", name, prevType.name(), outType.getMostCompactName(), inType.getMostCompactName(), currentType.glShaderType.name());
                         }
                     }
                 }

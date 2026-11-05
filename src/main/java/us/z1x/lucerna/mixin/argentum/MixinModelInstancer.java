@@ -3,8 +3,6 @@ package us.z1x.lucerna.mixin.argentum;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.rdh.argentum.impl.render.entity.instancing.ModelInstancer;
-import us.z1x.lucerna.compat.argentum.InstancedEntityPrograms;
-import us.z1x.lucerna.pipeline.ShadowRenderer;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.shader.GlProgram;
 import org.embeddedt.embeddium.impl.gl.shader.GlShader;
@@ -18,6 +16,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import us.z1x.lucerna.compat.argentum.InstancedEntityPrograms;
+import us.z1x.lucerna.pipeline.ShadowRenderer;
 
 @Mixin(value = ModelInstancer.class, remap = false)
 public abstract class MixinModelInstancer {

@@ -1,13 +1,14 @@
 package us.z1x.lucerna.gl.uniform;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
-import us.z1x.lucerna.gl.state.ValueUpdateNotifier;
 import org.joml.Vector2i;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
+import us.z1x.lucerna.gl.state.ValueUpdateNotifier;
 
 import java.util.function.Supplier;
 
 public class Vector2IntegerJomlUniform extends Uniform {
-    private Vector2i cachedValue;
+    private final Vector2i cachedValue = new Vector2i();
+    private boolean initialized;
     private final Supplier<Vector2i> value;
 
     Vector2IntegerJomlUniform(int location, Supplier<Vector2i> value) {
@@ -17,7 +18,6 @@ public class Vector2IntegerJomlUniform extends Uniform {
     Vector2IntegerJomlUniform(int location, Supplier<Vector2i> value, ValueUpdateNotifier notifier) {
         super(location, notifier);
 
-        this.cachedValue = null;
         this.value = value;
     }
 
@@ -33,9 +33,10 @@ public class Vector2IntegerJomlUniform extends Uniform {
     private void updateValue() {
         Vector2i newValue = value.get();
 
-        if (cachedValue == null || !newValue.equals(cachedValue)) {
-            cachedValue = newValue;
-            IrisRenderSystem.uniform2i(this.location, newValue.x, newValue.y);
+        if (!initialized || !newValue.equals(cachedValue)) {
+            initialized = true;
+            cachedValue.set(newValue);
+            LucernaRenderSystem.uniform2i(this.location, newValue.x, newValue.y);
         }
     }
 }

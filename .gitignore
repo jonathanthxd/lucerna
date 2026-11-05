@@ -2,7 +2,5 @@
 build/
 run/
 .idea/
-.kotlin/
 *.iml
 .DS_Store
-!.idea/icon.svg

@@ -1,19 +1,19 @@
 package us.z1x.lucerna.shaderpack;
 
-import us.z1x.lucerna.Iris;
 import org.joml.Vector2f;
 import org.joml.Vector3i;
+import us.z1x.lucerna.Lucerna;
 
 public class ComputeDirectiveParser {
     public static void setComputeWorkGroups(ComputeSource source, ConstDirectiveParser.ConstDirective directive) {
         if (!directive.getValue().startsWith("ivec3")) {
-            Iris.logger.error("Failed to process " + directive + ": value was not a valid ivec3 constructor");
+            Lucerna.logger.error("Failed to process {}: value was not a valid ivec3 constructor", directive);
         }
 
         String ivec3Args = directive.getValue().substring("ivec3".length()).trim();
 
         if (!ivec3Args.startsWith("(") || !ivec3Args.endsWith(")")) {
-            Iris.logger.error("Failed to process " + directive + ": value was not a valid ivec3 constructor");
+            Lucerna.logger.error("Failed to process {}: value was not a valid ivec3 constructor", directive);
         }
 
         ivec3Args = ivec3Args.substring(1, ivec3Args.length() - 1);
@@ -25,8 +25,7 @@ public class ComputeDirectiveParser {
         }
 
         if (parts.length != 3) {
-            Iris.logger.error("Failed to process " + directive +
-                ": expected 3 arguments to a ivec3 constructor, got " + parts.length);
+            Lucerna.logger.error("Failed to process {}: expected 3 arguments to a ivec3 constructor, got {}", directive, parts.length);
         }
 
         try {
@@ -35,19 +34,19 @@ public class ComputeDirectiveParser {
                 Integer.parseInt(parts[1]),
                 Integer.parseInt(parts[2])));
         } catch (NumberFormatException e) {
-            Iris.logger.error("Failed to process " + directive, e);
+            Lucerna.logger.error("Failed to process {}", directive, e);
         }
     }
 
     public static void setComputeWorkGroupsRelative(ComputeSource source, ConstDirectiveParser.ConstDirective directive) {
         if (!directive.getValue().startsWith("vec2")) {
-            Iris.logger.error("Failed to process " + directive + ": value was not a valid vec2 constructor");
+            Lucerna.logger.error("Failed to process {}: value was not a valid vec2 constructor", directive);
         }
 
         String vec2Args = directive.getValue().substring("vec2".length()).trim();
 
         if (!vec2Args.startsWith("(") || !vec2Args.endsWith(")")) {
-            Iris.logger.error("Failed to process " + directive + ": value was not a valid vec2 constructor");
+            Lucerna.logger.error("Failed to process {}: value was not a valid vec2 constructor", directive);
         }
 
         vec2Args = vec2Args.substring(1, vec2Args.length() - 1);
@@ -59,8 +58,7 @@ public class ComputeDirectiveParser {
         }
 
         if (parts.length != 2) {
-            Iris.logger.error("Failed to process " + directive +
-                ": expected 2 arguments to a vec2 constructor, got " + parts.length);
+            Lucerna.logger.error("Failed to process {}: expected 2 arguments to a vec2 constructor, got {}", directive, parts.length);
         }
 
         try {
@@ -69,7 +67,7 @@ public class ComputeDirectiveParser {
                 Float.parseFloat(parts[1])
             ));
         } catch (NumberFormatException e) {
-            Iris.logger.error("Failed to process " + directive, e);
+            Lucerna.logger.error("Failed to process {}", directive, e);
         }
     }
 }

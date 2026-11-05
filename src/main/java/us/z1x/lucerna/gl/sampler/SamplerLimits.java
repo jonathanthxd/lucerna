@@ -17,10 +17,6 @@ public class SamplerLimits {
         return maxTextureUnits;
     }
 
-    public int getMaxDrawBuffers() {
-        return maxDrawBuffers;
-    }
-
     public static SamplerLimits get() {
         if (instance == null) {
             instance = new SamplerLimits();

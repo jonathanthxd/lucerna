@@ -21,7 +21,7 @@ public enum AlphaTestFunction {
     }
 
     public static Optional<AlphaTestFunction> fromGlId(int glId) {
-        switch(glId) {
+        switch (glId) {
             case GL11.GL_NEVER:
                 return Optional.of(NEVER);
             case GL11.GL_LESS:

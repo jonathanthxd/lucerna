@@ -1,13 +1,13 @@
 package us.z1x.lucerna.gui.element.widget;
 
-import us.z1x.lucerna.gui.GuiUtil;
-import us.z1x.lucerna.shaderpack.option.menu.OptionMenuStringOptionElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.TextRenderer;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.Formatting;
 import net.minecraft.util.math.MathHelper;
+import us.z1x.lucerna.gui.GuiUtil;
+import us.z1x.lucerna.shaderpack.option.menu.OptionMenuStringOptionElement;
 
 public class SliderElementWidget extends StringElementWidget {
     private static final int PREVIEW_SLIDER_WIDTH = 4;
@@ -30,7 +30,7 @@ public class SliderElementWidget extends StringElementWidget {
         }
 
         if (Screen.isShiftDown()) {
-            renderTooltip(Formatting.GREEN + I18n.translate("options.iris.setToDefault"), mouseX, mouseY, hovered);
+            renderTooltip(Formatting.GREEN + I18n.translate("options.lucerna.setToDefault"), mouseX, mouseY, hovered);
         } else if (!this.screen.isDisplayingComment()) {
             renderTooltip(this.unmodifiedLabel, mouseX, mouseY, hovered);
         }
@@ -45,7 +45,7 @@ public class SliderElementWidget extends StringElementWidget {
     }
 
     private void renderSlider(int x, int y, int width, int height) {
-        GuiUtil.bindIrisWidgetsTexture();
+        GuiUtil.bindWidgetsTexture();
 
         GuiUtil.drawButton(x, y, width, height, false, false);
         GuiUtil.drawButton(x + 2, y + 2, width - 4, height - 4, false, true);

@@ -7,9 +7,9 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.gl.texture.TextureScaleOverride;
 import org.joml.Vector2i;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.gl.texture.TextureScaleOverride;
 
 import java.util.List;
 import java.util.Set;
@@ -235,8 +235,7 @@ public class PackDirectives {
             if (index != -1) {
                 explicitFlips.put(index, shouldFlip);
             } else {
-                Iris.logger.warn("Unknown buffer with ID " + buffer + " specified in flip directive for pass "
-                        + pass);
+                Lucerna.logger.warn("Unknown buffer with ID {} specified in flip directive for pass {}", buffer, pass);
             }
         });
 

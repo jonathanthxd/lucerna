@@ -1,18 +1,16 @@
 package us.z1x.lucerna.mixin;
 
 import it.unimi.dsi.fastutil.objects.Object2IntFunction;
-import us.z1x.lucerna.block_rendering.BlockRenderingSettings;
-import us.z1x.lucerna.shaderpack.materialmap.NamespacedId;
-import us.z1x.lucerna.uniforms.CapturedRenderingState;
 import net.minecraft.client.render.entity.ItemRenderer;
 import net.minecraft.client.render.model.block.BakedModel;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.resource.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import us.z1x.lucerna.blockrendering.BlockRenderingSettings;
+import us.z1x.lucerna.shaderpack.materialmap.NamespacedId;
+import us.z1x.lucerna.uniforms.CapturedRenderingState;
 
 @Mixin(ItemRenderer.class)
 public class MixinItemRenderer {
@@ -21,8 +19,7 @@ public class MixinItemRenderer {
         Object2IntFunction<NamespacedId> itemIds = BlockRenderingSettings.INSTANCE.getItemIds();
 
         if (itemIds != null && stack != null) {
-            Identifier id = Item.REGISTRY.getKey(stack.getItem());
-            CapturedRenderingState.INSTANCE.setCurrentRenderedItem(itemIds.applyAsInt(new NamespacedId(id.getNamespace(), id.getPath())));
+            CapturedRenderingState.INSTANCE.setCurrentRenderedItem(itemIds.applyAsInt(NamespacedId.of(stack.getItem())));
         }
     }
 

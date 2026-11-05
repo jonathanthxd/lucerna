@@ -1,7 +1,7 @@
 package us.z1x.lucerna.vertices;
 
-import us.z1x.lucerna.vertices.views.QuadView;
 import org.lwjgl.system.MemoryUtil;
+import us.z1x.lucerna.vertices.views.QuadView;
 
 public final class BufferBuilderQuadView implements QuadView {
     private long address;

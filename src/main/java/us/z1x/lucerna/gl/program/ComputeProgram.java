@@ -1,14 +1,13 @@
 package us.z1x.lucerna.gl.program;
 
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.gl.GlResource;
-import us.z1x.lucerna.gl.IrisRenderSystem;
-import us.z1x.lucerna.gl.IrisRenderSystem;
-import us.z1x.lucerna.pipeline.WorldRenderingPipeline;
 import org.joml.Vector2f;
 import org.joml.Vector3i;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL43C;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.gl.GlResource;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
+import us.z1x.lucerna.pipeline.WorldRenderingPipeline;
 
 public final class ComputeProgram extends GlResource {
     private final ProgramUniforms uniforms;
@@ -25,7 +24,7 @@ public final class ComputeProgram extends GlResource {
         super(program);
 
         localSize = new int[3];
-        IrisRenderSystem.getProgramiv(program, GL43C.GL_COMPUTE_WORK_GROUP_SIZE, localSize);
+        LucernaRenderSystem.getProgramiv(program, GL43C.GL_COMPUTE_WORK_GROUP_SIZE, localSize);
         this.uniforms = uniforms;
         this.samplers = samplers;
         this.images = images;
@@ -54,21 +53,21 @@ public final class ComputeProgram extends GlResource {
     }
 
     public void dispatch(float width, float height) {
-        IrisRenderSystem.useProgram(getGlId());
+        LucernaRenderSystem.useProgram(getGlId());
         uniforms.update();
         samplers.update();
         images.update();
 
-        if (!Iris.getPipelineManager().getPipeline().map(WorldRenderingPipeline::allowConcurrentCompute).orElse(false)) {
-            IrisRenderSystem.memoryBarrier(40);
+        if (!Lucerna.getPipelineManager().getPipeline().map(WorldRenderingPipeline::allowConcurrentCompute).orElse(false)) {
+            LucernaRenderSystem.memoryBarrier(40);
         }
 
-        IrisRenderSystem.dispatchCompute(getWorkGroups(width, height));
+        LucernaRenderSystem.dispatchCompute(getWorkGroups(width, height));
     }
 
     public static void unbind() {
         ProgramUniforms.clearActiveUniforms();
-        IrisRenderSystem.useProgram(0);
+        LucernaRenderSystem.useProgram(0);
     }
 
     public void destroyInternal() {

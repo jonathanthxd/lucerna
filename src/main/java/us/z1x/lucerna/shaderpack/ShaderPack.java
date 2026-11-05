@@ -7,7 +7,10 @@ import com.google.gson.JsonParseException;
 import com.google.gson.stream.JsonReader;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import us.z1x.lucerna.Iris;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resource.language.I18n;
+import org.jetbrains.annotations.Nullable;
+import us.z1x.lucerna.Lucerna;
 import us.z1x.lucerna.features.FeatureFlags;
 import us.z1x.lucerna.gl.texture.InternalTextureFormat;
 import us.z1x.lucerna.gl.texture.PixelFormat;
@@ -28,9 +31,6 @@ import us.z1x.lucerna.shaderpack.texture.CustomTextureData;
 import us.z1x.lucerna.shaderpack.texture.TextureFilteringData;
 import us.z1x.lucerna.shaderpack.texture.TextureStage;
 import us.z1x.lucerna.uniforms.custom.CustomUniforms;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resource.language.I18n;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -98,7 +98,7 @@ public class ShaderPack {
 
         if (!graph.getFailures().isEmpty()) {
             graph.getFailures().forEach((path, error) -> {
-                Iris.logger.error("{}", error.toString());
+                Lucerna.logger.error("{}", error.toString());
             });
 
             throw new IOException("Failed to resolve some #include directives, see previous messages for details");
@@ -120,10 +120,13 @@ public class ShaderPack {
         List<String> invalidFeatureFlags = invalidFlagList.stream().map(FeatureFlags::getHumanReadableName).collect(Collectors.toList());
 
         if (!invalidFeatureFlags.isEmpty()) {
-            if (Minecraft.getInstance().screen instanceof ShaderPackScreen) {
-                Minecraft.getInstance().openScreen(new FeatureMissingErrorScreen(Minecraft.getInstance().screen, I18n.translate("iris.unsupported.pack"), I18n.translate("iris.unsupported.pack.description", FeatureFlags.getInvalidStatus(invalidFlagList), invalidFeatureFlags.stream()
-                    .collect(Collectors.joining(", ", ": ", ".")))));
-            }
+            // packs also load on a worker thread
+            Minecraft.getInstance().executeTask((Runnable) () -> {
+                if (Minecraft.getInstance().screen instanceof ShaderPackScreen) {
+                    Minecraft.getInstance().openScreen(new FeatureMissingErrorScreen(Minecraft.getInstance().screen, I18n.translate("lucerna.unsupported.pack"), I18n.translate("lucerna.unsupported.pack.description", FeatureFlags.getInvalidStatus(invalidFlagList), invalidFeatureFlags.stream()
+                        .collect(Collectors.joining(", ", ": ", ".")))));
+                }
+            });
             // reloading here would close the zip this pack is still read from, so let the loader fall back instead
             throw new IllegalStateException("The shader pack needs unsupported features: " + String.join(", ", invalidFeatureFlags));
         }
@@ -145,9 +148,7 @@ public class ShaderPack {
         List<String> disabledPrograms = new ArrayList<>();
         this.profile.current.ifPresent(profile -> disabledPrograms.addAll(profile.disabledPrograms));
         shaderProperties.getConditionallyEnabledPrograms().forEach((program, shaderOption) -> {
-            if ("true".equals(shaderOption)) return;
-
-            if ("false".equals(shaderOption) || !this.shaderPackOptions.getOptionValues().getBooleanValueOrDefault(shaderOption)) {
+            if (!ProgramCondition.evaluate(shaderOption, this.shaderPackOptions.getOptionValues())) {
                 disabledPrograms.add(program);
             }
         });
@@ -164,7 +165,7 @@ public class ShaderPack {
             this.profileInfo = "Profile: " + profileName + " (+" + userOptionsChanged + " option" + (userOptionsChanged == 1 ? "" : "s") + " changed by user)";
         }
 
-        Iris.logger.info(this.profileInfo);
+        Lucerna.logger.info(this.profileInfo);
 
         IncludeProcessor includeProcessor = new IncludeProcessor(graph);
 
@@ -213,7 +214,7 @@ public class ShaderPack {
             try {
                 return readTexture(root, path);
             } catch (IOException e) {
-                Iris.logger.error("Unable to read the custom noise texture at " + path, e);
+                Lucerna.logger.error("Unable to read the custom noise texture at {}", path, e);
 
                 return null;
             }
@@ -227,7 +228,7 @@ public class ShaderPack {
                 try {
                     innerCustomTextureDataMap.put(samplerName, readTexture(root, path));
                 } catch (IOException e) {
-                    Iris.logger.error("Unable to read the custom texture at " + path, e);
+                    Lucerna.logger.error("Unable to read the custom texture at {}", path, e);
                 }
             });
 
@@ -237,10 +238,6 @@ public class ShaderPack {
 
     private String getCurrentProfileName() {
         return profile.current.map(p -> p.name).orElse("Custom");
-    }
-
-    public String getProfileInfo() {
-        return profileInfo;
     }
 
     @Nullable
@@ -271,7 +268,7 @@ public class ShaderPack {
             String[] location = path.split(":");
 
             if (location.length > 2) {
-                Iris.logger.warn("Resource location " + path + " contained more than two parts?");
+                Lucerna.logger.warn("Resource location {} contained more than two parts?", path);
             }
 
             if (location[0].equals("minecraft") && (location[1].equals("dynamic/lightmap_1") || location[1].equals("dynamic/light_map_1"))) {
@@ -303,7 +300,7 @@ public class ShaderPack {
                         }
                     }
                 } catch (IOException e) {
-                    Iris.logger.error("Unable to read the custom texture mcmeta at " + mcMetaPath + ", ignoring: " + e);
+                    Lucerna.logger.error("Unable to read the custom texture mcmeta at {}, ignoring: {}", mcMetaPath, e);
                 }
             }
 
@@ -346,11 +343,11 @@ public class ShaderPack {
         try {
             return new String(Files.readAllBytes(shaderPath.resolve(name)), StandardCharsets.ISO_8859_1);
         } catch (NoSuchFileException e) {
-            Iris.logger.debug("An " + name + " file was not found in the current shaderpack");
+            Lucerna.logger.debug("An {} file was not found in the current shaderpack", name);
 
             return null;
         } catch (IOException e) {
-            Iris.logger.error("An IOException occurred reading " + name + " from the current shaderpack", e);
+            Lucerna.logger.error("An IOException occurred reading {} from the current shaderpack", name, e);
 
             return null;
         }

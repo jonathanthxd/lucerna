@@ -1,6 +1,5 @@
 package us.z1x.lucerna.pipeline;
 
-import us.z1x.lucerna.mixin.GameRendererAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.platform.GlStateManager;
@@ -8,6 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.living.LivingEntity;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.Project;
+import us.z1x.lucerna.mixin.GameRendererAccessor;
 
 public final class HandRenderer {
     public static final HandRenderer INSTANCE = new HandRenderer();
@@ -39,7 +39,7 @@ public final class HandRenderer {
 
         pipeline.setPhase(WorldRenderingPhase.HAND_SOLID);
 
-        minecraft.profiler.push("iris_hand");
+        minecraft.profiler.push("lucerna_hand");
 
         // scale the projection depth so the hand does not clip through blocks
         GlStateManager.matrixMode(GL11.GL_PROJECTION);

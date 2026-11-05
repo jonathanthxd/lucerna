@@ -1,6 +1,7 @@
 package us.z1x.lucerna.gui.element.widget;
 
-import us.z1x.lucerna.Iris;
+import net.minecraft.text.Formatting;
+import us.z1x.lucerna.Lucerna;
 import us.z1x.lucerna.gui.GuiUtil;
 import us.z1x.lucerna.gui.NavigationController;
 import us.z1x.lucerna.gui.element.ShaderPackOptionList;
@@ -15,7 +16,6 @@ import us.z1x.lucerna.shaderpack.option.menu.OptionMenuMainElementScreen;
 import us.z1x.lucerna.shaderpack.option.menu.OptionMenuProfileElement;
 import us.z1x.lucerna.shaderpack.option.menu.OptionMenuStringOptionElement;
 import us.z1x.lucerna.shaderpack.option.menu.OptionMenuSubElementScreen;
-import net.minecraft.text.Formatting;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,7 +65,7 @@ public final class OptionMenuConstructor {
 
     static {
         registerScreen(OptionMenuMainElementScreen.class, screen ->
-                new ElementWidgetScreenData(Formatting.BOLD + Iris.getCurrentPackName() + (Iris.isFallback() ? " (fallback)" : ""), false));
+                new ElementWidgetScreenData(Formatting.BOLD + Lucerna.getCurrentPackName() + (Lucerna.isFallback() ? " (fallback)" : ""), false));
 
         registerScreen(OptionMenuSubElementScreen.class, screen ->
                 new ElementWidgetScreenData(GuiUtil.translateOrDefault(screen.screenId, "screen." + screen.screenId), true));

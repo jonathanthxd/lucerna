@@ -1,17 +1,15 @@
 package us.z1x.lucerna.uniforms.custom.cached;
 
-import kroppeb.stareval.function.FunctionReturn;
-import us.z1x.lucerna.gl.IrisRenderSystem;
-import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
-import us.z1x.lucerna.parsing.VectorType;
 import org.joml.Vector2i;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
+import us.z1x.lucerna.parsing.VectorType;
 
 import java.util.function.Supplier;
 
 public class Int2VectorCachedUniform extends VectorCachedUniform<Vector2i> {
 
-    public Int2VectorCachedUniform(String name, UniformUpdateFrequency updateFrequency, Supplier<Vector2i> supplier) {
-        super(name, updateFrequency, new Vector2i(), supplier);
+    public Int2VectorCachedUniform(String name, Supplier<Vector2i> supplier) {
+        super(name, new Vector2i(), supplier);
     }
 
     @Override
@@ -21,12 +19,7 @@ public class Int2VectorCachedUniform extends VectorCachedUniform<Vector2i> {
 
     @Override
     public void push(int location) {
-        IrisRenderSystem.uniform2i(location, this.cached.x, this.cached.y);
-    }
-
-    @Override
-    public void writeTo(FunctionReturn functionReturn) {
-        functionReturn.objectReturn = this.cached;
+        LucernaRenderSystem.uniform2i(location, this.cached.x, this.cached.y);
     }
 
     @Override

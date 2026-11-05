@@ -3,7 +3,6 @@ package us.z1x.lucerna.mixin.celeritas;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import us.z1x.lucerna.pipeline.ShadowRenderer;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.render.chunk.DefaultChunkRenderer;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
@@ -19,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import us.z1x.lucerna.pipeline.ShadowRenderer;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -27,7 +27,7 @@ import java.util.WeakHashMap;
 public class MixinShadowBatchCache {
     // the face mask each shadow batch was built with, it changes when the light crosses an axis
     @Unique
-    private static final Map<CachedBatch, Integer> lucerna$shadowMasks = new WeakHashMap<>();
+    private static final Map<CachedBatch, Integer> LUCERNA_SHADOW_MASKS = new WeakHashMap<>();
 
     @Inject(method = "render", at = @At("HEAD"))
     private void lucerna$beginShadowPass(CallbackInfo ci, @Local(argsOnly = true) TerrainRenderPass pass) {
@@ -46,7 +46,7 @@ public class MixinShadowBatchCache {
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/render/chunk/data/SectionRenderDataStorage;getCachedMultiDrawBatch(Lorg/embeddedt/embeddium/impl/render/chunk/data/SectionRenderDataStorage$BatchCacheParams;)Lorg/embeddedt/embeddium/impl/render/chunk/multidraw/CachedBatch;"))
     private CachedBatch lucerna$dropStaleShadowBatch(SectionRenderDataStorage storage, SectionRenderDataStorage.BatchCacheParams params, Operation<CachedBatch> original) {
         CachedBatch cached = original.call(storage, params);
-        return cached != null && ShadowRenderer.ACTIVE && !lucerna$shadowMasks.getOrDefault(cached, -1).equals(ShadowRenderer.faceMask) ? null : cached;
+        return cached != null && ShadowRenderer.ACTIVE && !LUCERNA_SHADOW_MASKS.getOrDefault(cached, -1).equals(ShadowRenderer.faceMask) ? null : cached;
     }
 
     @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/render/chunk/multidraw/BatchAssembler;createCachedBatch(Lorg/embeddedt/embeddium/impl/render/chunk/region/RenderRegion;Lorg/embeddedt/embeddium/impl/render/chunk/data/SectionRenderDataStorage;Lorg/embeddedt/embeddium/impl/render/chunk/lists/ChunkRenderList;Lorg/embeddedt/embeddium/impl/render/viewport/CameraTransform;Lorg/embeddedt/embeddium/impl/render/chunk/terrain/TerrainRenderPass;ZLorg/embeddedt/embeddium/impl/gl/device/CommandList;Lorg/embeddedt/embeddium/impl/render/chunk/multidraw/BatchAssembler$TessellationProvider;)Lorg/embeddedt/embeddium/impl/render/chunk/multidraw/CachedBatch;"))
@@ -56,7 +56,7 @@ public class MixinShadowBatchCache {
         CachedBatch batch = original.call(region, storage, list, camera, pass, useBlockFaceCulling, commandList, tessellation);
 
         if (ShadowRenderer.ACTIVE) {
-            lucerna$shadowMasks.put(batch, ShadowRenderer.faceMask);
+            LUCERNA_SHADOW_MASKS.put(batch, ShadowRenderer.faceMask);
         }
 
         return batch;

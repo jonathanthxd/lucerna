@@ -94,5 +94,4 @@ public interface IrisApi {
      * @since API v0.0
      */
     IrisApiConfig getConfig();
-
 }

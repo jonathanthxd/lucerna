@@ -1,15 +1,15 @@
 package us.z1x.lucerna.gui.element.widget;
 
-import us.z1x.lucerna.gui.GuiUtil;
-import us.z1x.lucerna.gui.NavigationController;
-import us.z1x.lucerna.gui.screen.ShaderPackScreen;
-import us.z1x.lucerna.shaderpack.option.menu.OptionMenuElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.TextRenderer;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.Formatting;
 import org.jetbrains.annotations.Nullable;
+import us.z1x.lucerna.gui.GuiUtil;
+import us.z1x.lucerna.gui.NavigationController;
+import us.z1x.lucerna.gui.screen.ShaderPackScreen;
+import us.z1x.lucerna.shaderpack.option.menu.OptionMenuElement;
 
 import java.util.Optional;
 
@@ -63,7 +63,7 @@ public abstract class BaseOptionElementWidget<T extends OptionMenuElement> exten
     }
 
     protected final void renderOptionWithValue(int x, int y, int width, int height, boolean hovered, float sliderPosition, int sliderWidth) {
-        GuiUtil.bindIrisWidgetsTexture();
+        GuiUtil.bindWidgetsTexture();
 
         GuiUtil.drawButton(x, y, width, height, hovered, false);
 
@@ -89,7 +89,7 @@ public abstract class BaseOptionElementWidget<T extends OptionMenuElement> exten
 
     protected final void tryRenderTooltip(int mouseX, int mouseY, boolean hovered) {
         if (Screen.isShiftDown()) {
-            renderTooltip(Formatting.GREEN + I18n.translate("options.iris.setToDefault"), mouseX, mouseY, hovered);
+            renderTooltip(Formatting.GREEN + I18n.translate("options.lucerna.setToDefault"), mouseX, mouseY, hovered);
         } else if (this.isLabelTrimmed && !this.screen.isDisplayingComment()) {
             renderTooltip(this.unmodifiedLabel, mouseX, mouseY, hovered);
         }

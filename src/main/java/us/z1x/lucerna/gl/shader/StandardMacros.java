@@ -1,12 +1,13 @@
 package us.z1x.lucerna.gl.shader;
 
 import com.google.common.collect.ImmutableList;
-import us.z1x.lucerna.gui.option.IrisVideoSettings;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20C;
+import us.z1x.lucerna.gui.option.LucernaVideoSettings;
 import us.z1x.lucerna.pipeline.HandRenderer;
 import us.z1x.lucerna.pipeline.WorldRenderingPhase;
 import us.z1x.lucerna.shaderpack.StringPair;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20C;
+import us.z1x.lucerna.texture.pbr.PBRTextureManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,50 +49,30 @@ public class StandardMacros {
 
         define(standardDefines, "MC_NORMAL_MAP");
         define(standardDefines, "MC_SPECULAR_MAP");
-        define(standardDefines, "MC_RENDER_QUALITY", Float.toString(IrisVideoSettings.renderQuality));
-        define(standardDefines, "MC_SHADOW_QUALITY", Float.toString(IrisVideoSettings.shadowQuality));
+        String format = PBRTextureManager.INSTANCE.getFormat();
+
+        if (format != null) {
+            String[] parts = format.split("/");
+            String name = "MC_TEXTURE_FORMAT_" + parts[0].toUpperCase(Locale.ROOT).replace('-', '_');
+
+            define(standardDefines, name);
+
+            if (parts.length > 1) {
+                define(standardDefines, name + "_" + parts[1].replaceAll("[.-]", "_"));
+            }
+        }
+
+        define(standardDefines, "MC_RENDER_QUALITY", Float.toString(LucernaVideoSettings.renderQuality));
+        define(standardDefines, "MC_SHADOW_QUALITY", Float.toString(LucernaVideoSettings.shadowQuality));
         define(standardDefines, "MC_HAND_DEPTH", Float.toString(HandRenderer.DEPTH));
 
         getRenderStages().forEach((stage, index) -> define(standardDefines, stage, index));
-
-        for (String irisDefine : getIrisDefines()) {
-            define(standardDefines, irisDefine);
-        }
 
         return ImmutableList.copyOf(standardDefines);
     }
 
     public static String getMcVersion() {
-        String version = "1.8.9";
-
-        if (version == null) {
-            throw new IllegalStateException("Could not get the current minecraft version!");
-        }
-
-        String[] splitVersion = version.split("\\.");
-
-        if (splitVersion.length < 2) {
-            throw new IllegalStateException("Could not parse game version \"" + version +  "\"");
-        }
-
-        String major = splitVersion[0];
-        String minor = splitVersion[1];
-        String bugfix;
-
-        if (splitVersion.length < 3) {
-            bugfix = "00";
-        } else {
-            bugfix = splitVersion[2];
-        }
-
-        if (minor.length() == 1) {
-            minor = 0 + minor;
-        }
-        if (bugfix.length() == 1) {
-            bugfix = 0 + bugfix;
-        }
-
-        return major + minor + bugfix;
+        return "10809";
     }
 
     public static String getGlVersion(int name) {
@@ -107,7 +88,7 @@ public class StandardMacros {
         String minor = group(matcher, "minor");
         String bugfix = group(matcher, "bugfix");
 
-        if (bugfix == null) {
+        if (bugfix == null || bugfix.isEmpty()) {
             bugfix = "0";
         }
 
@@ -193,11 +174,5 @@ public class StandardMacros {
             stages.put("MC_RENDER_STAGE_" + phase.name(), String.valueOf(phase.ordinal()));
         }
         return stages;
-    }
-
-    public static List<String> getIrisDefines() {
-        List<String> defines = new ArrayList<>();
-
-        return defines;
     }
 }

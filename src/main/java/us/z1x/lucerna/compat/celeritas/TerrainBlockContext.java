@@ -1,10 +1,10 @@
 package us.z1x.lucerna.compat.celeritas;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import us.z1x.lucerna.block_rendering.BlockRenderingSettings;
-import us.z1x.lucerna.vertices.ExtendedDataHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.BlockState;
+import us.z1x.lucerna.blockrendering.BlockRenderingSettings;
+import us.z1x.lucerna.vertices.ExtendedDataHelper;
 
 // the block that the chunk mesher on this thread emits quads for, read by XHFPTerrainVertex
 public final class TerrainBlockContext {

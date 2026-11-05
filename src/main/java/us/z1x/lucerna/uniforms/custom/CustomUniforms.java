@@ -7,23 +7,28 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import kroppeb.stareval.element.ExpressionElement;
-import kroppeb.stareval.expression.Expression;
-import kroppeb.stareval.expression.VariableExpression;
-import kroppeb.stareval.function.FunctionContext;
-import kroppeb.stareval.function.FunctionReturn;
-import kroppeb.stareval.function.Type;
-import kroppeb.stareval.parser.Parser;
-import kroppeb.stareval.resolver.ExpressionResolver;
-import us.z1x.lucerna.Iris;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.render.texture.TextureAtlas;
+import org.joml.Vector2i;
+import us.z1x.lucerna.Lucerna;
 import us.z1x.lucerna.gl.uniform.LocationalUniformHolder;
 import us.z1x.lucerna.gl.uniform.Uniform;
 import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
-import us.z1x.lucerna.parsing.IrisFunctions;
-import us.z1x.lucerna.parsing.IrisOptions;
+import us.z1x.lucerna.parsing.LucernaFunctions;
+import us.z1x.lucerna.parsing.LucernaOptions;
 import us.z1x.lucerna.parsing.VectorType;
 import us.z1x.lucerna.shaderpack.IdMap;
 import us.z1x.lucerna.shaderpack.PackDirectives;
+import us.z1x.lucerna.stareval.element.ExpressionElement;
+import us.z1x.lucerna.stareval.expression.Expression;
+import us.z1x.lucerna.stareval.expression.VariableExpression;
+import us.z1x.lucerna.stareval.function.FunctionContext;
+import us.z1x.lucerna.stareval.function.FunctionReturn;
+import us.z1x.lucerna.stareval.function.Type;
+import us.z1x.lucerna.stareval.parser.Parser;
+import us.z1x.lucerna.stareval.resolver.ExpressionResolver;
+import us.z1x.lucerna.texture.TextureInfoCache;
+import us.z1x.lucerna.texture.TextureInfoCache.TextureInfo;
 import us.z1x.lucerna.uniforms.CommonUniforms;
 import us.z1x.lucerna.uniforms.FrameUpdateNotifier;
 import us.z1x.lucerna.uniforms.HardcodedCustomUniforms;
@@ -50,7 +55,7 @@ public class CustomUniforms implements FunctionContext {
     private CustomUniforms(CustomUniformFixedInputUniformsHolder inputHolder, CustomUniformFixedInputUniformsHolder hardcodedHolder, Map<String, Builder.Variable> variables) {
         this.inputHolder = inputHolder;
         ExpressionResolver resolver = new ExpressionResolver(
-            IrisFunctions.functions,
+            LucernaFunctions.functions,
             (name) -> {
                 Type type = this.inputHolder.getType(name);
                 if (type != null)
@@ -72,7 +77,7 @@ public class CustomUniforms implements FunctionContext {
                     this.uniforms.add(cachedUniform);
                 }
             } catch (Exception e) {
-                Iris.logger
+                Lucerna.logger
                     .warn("Failed to resolve uniform " + variable.name + ", reason: " + e
                         .getMessage() + " ( = " + variable.expression + ")", e);
             }
@@ -165,9 +170,7 @@ public class CustomUniforms implements FunctionContext {
             }
 
             if (!brokenUniforms.isEmpty()) {
-                Iris.logger.warn(
-                    "The following uniforms won't work, either because they are broken, or reference a broken uniform: \n" +
-                        brokenUniforms.stream().map(CachedUniform::getName).collect(Collectors.joining(", ")));
+                Lucerna.logger.warn("The following uniforms won't work, either because they are broken, or reference a broken uniform: \n{}", brokenUniforms.stream().map(CachedUniform::getName).collect(Collectors.joining(", ")));
             }
 
             if (!dependsOnCount.isEmpty()) {
@@ -243,7 +246,7 @@ public class CustomUniforms implements FunctionContext {
         Set<CachedUniform> unused = new ObjectOpenHashSet<>();
         for (int i = this.orderedUniforms.size() - 1; i >= 0; i--) {
             CachedUniform uniform = this.orderedUniforms.get(i);
-            if (!dependedByCount.containsKey(uniform)) {
+            if (dependedByCount.getInt(uniform) == 0) {
                 unused.add(uniform);
                 List<CachedUniform> dependencies = this.dependsOn.get(uniform);
                 if (dependencies != null) {
@@ -312,26 +315,26 @@ public class CustomUniforms implements FunctionContext {
 
         public void addVariable(String type, String name, String expression, boolean isUniform) {
             if (variables.containsKey(name)) {
-                Iris.logger.warn("Ignoring duplicated custom uniform name: " + name);
+                Lucerna.logger.warn("Ignoring duplicated custom uniform name: {}", name);
                 return;
             }
 
             Type parsedType = types.get(type);
             if (parsedType == null) {
-                Iris.logger.warn("Ignoring invalid uniform type: " + type + " of " + name);
+                Lucerna.logger.warn("Ignoring invalid uniform type: {} of {}", type, name);
                 return;
             }
 
             try {
-                ExpressionElement ast = Parser.parse(expression, IrisOptions.options);
+                ExpressionElement ast = Parser.parse(expression, LucernaOptions.options);
                 variables.put(name, new Variable(parsedType, name, ast, isUniform));
             } catch (Exception e) {
-                Iris.logger.warn("Failed to parse custom variable/uniform " + name + " with expression " + expression, e);
+                Lucerna.logger.warn("Failed to parse custom variable/uniform {} with expression {}", name, expression, e);
             }
         }
 
         public CustomUniforms build(IdMap idMap, PackDirectives directives, FrameUpdateNotifier updateNotifier) {
-            Iris.logger.info("Starting custom uniform resolving");
+            Lucerna.logger.info("Starting custom uniform resolving");
             CustomUniformFixedInputUniformsHolder.Builder inputs = new CustomUniformFixedInputUniformsHolder.Builder();
             CommonUniforms.addNonDynamicUniforms(inputs, idMap, directives, updateNotifier);
             // constants of optifine's custom uniform expressions, a pack may define its own
@@ -339,6 +342,10 @@ public class CustomUniforms implements FunctionContext {
                 inputs.uniform1f(UniformUpdateFrequency.ONCE, "pi", () -> (float) Math.PI);
             }
 
+            inputs.uniform2i(UniformUpdateFrequency.PER_FRAME, "atlasSize", () -> {
+                TextureInfo info = TextureInfoCache.INSTANCE.getInfo(Minecraft.getInstance().getTextureManager().get(TextureAtlas.BLOCKS_LOCATION).getGlId());
+                return new Vector2i(info.getWidth(), info.getHeight());
+            });
             inputs.uniform1b(UniformUpdateFrequency.ONCE, "true", () -> true);
             inputs.uniform1b(UniformUpdateFrequency.ONCE, "false", () -> false);
             CustomUniformFixedInputUniformsHolder.Builder hardcoded = new CustomUniformFixedInputUniformsHolder.Builder();

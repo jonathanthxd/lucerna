@@ -6,9 +6,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.gl.texture.InternalTextureFormat;
 import org.joml.Vector4f;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.gl.texture.InternalTextureFormat;
 
 import java.util.Collections;
 import java.util.Map;
@@ -32,7 +32,7 @@ public class PackRenderTargetDirectives {
     static {
         ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
 
-        for (int i = 0; i < IrisLimits.MAX_COLOR_BUFFERS; i++) {
+        for (int i = 0; i < LucernaLimits.MAX_COLOR_BUFFERS; i++) {
             builder.add(i);
         }
 
@@ -74,8 +74,7 @@ public class PackRenderTargetDirectives {
                 } else if ("RGB16".equals(format)) {
                     colortex7.requestedFormat = InternalTextureFormat.RGB16;
                 } else {
-                    Iris.logger.warn("Ignoring GAUX4FORMAT directive /* GAUX4FORMAT:" + format + "*/ because " + format
-                        + " must be RGBA32F, RGB32F, or RGB16. Use `const int colortex7Format = " + format + ";` + instead.");
+                    Lucerna.logger.warn("Ignoring GAUX4FORMAT directive /* GAUX4FORMAT:{}*/ because {} must be RGBA32F, RGB32F, or RGB16. Use `const int colortex7Format = {};` + instead.", format, format, format);
                 }
             });
         });
@@ -105,7 +104,7 @@ public class PackRenderTargetDirectives {
             if (internalFormat.isPresent()) {
                 settings.requestedFormat = internalFormat.get();
             } else {
-                Iris.logger.warn("Unrecognized internal texture format " + format + " specified for " + bufferName + "Format, ignoring.");
+                Lucerna.logger.warn("Unrecognized internal texture format {} specified for {}Format, ignoring.", format, bufferName);
             }
         });
 

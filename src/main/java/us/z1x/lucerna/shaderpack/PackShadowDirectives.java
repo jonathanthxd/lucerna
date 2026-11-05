@@ -1,10 +1,10 @@
 package us.z1x.lucerna.shaderpack;
 
 import com.google.common.collect.ImmutableList;
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.gl.texture.InternalTextureFormat;
-import us.z1x.lucerna.gui.option.IrisVideoSettings;
 import org.joml.Vector4f;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.gl.texture.InternalTextureFormat;
+import us.z1x.lucerna.gui.option.LucernaVideoSettings;
 
 import java.util.Optional;
 
@@ -90,7 +90,7 @@ public class PackShadowDirectives {
     }
 
     public int getResolution() {
-        return IrisVideoSettings.scaleShadowResolution(resolution);
+        return LucernaVideoSettings.scaleShadowResolution(resolution);
     }
 
     public Float getFov() {
@@ -272,7 +272,7 @@ public class PackShadowDirectives {
                 if (internalFormat.isPresent()) {
                     settings.get(finalI).setFormat(internalFormat.get());
                 } else {
-                    Iris.logger.warn("Unrecognized internal texture format " + format + " specified for " + bufferName + "Format, ignoring.");
+                    Lucerna.logger.warn("Unrecognized internal texture format {} specified for {}Format, ignoring.", format, bufferName);
                 }
             });
 

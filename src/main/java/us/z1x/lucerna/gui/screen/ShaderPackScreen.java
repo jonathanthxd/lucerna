@@ -1,14 +1,5 @@
 package us.z1x.lucerna.gui.screen;
 
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.gui.GuiUtil;
-import us.z1x.lucerna.gui.NavigationController;
-import us.z1x.lucerna.gui.element.IrisObjectSelectionList;
-import us.z1x.lucerna.gui.element.ShaderPackOptionList;
-import us.z1x.lucerna.gui.element.ShaderPackSelectionList;
-import us.z1x.lucerna.gui.element.widget.AbstractElementWidget;
-import us.z1x.lucerna.gui.element.widget.CommentedElementWidget;
-import us.z1x.lucerna.shaderpack.ShaderPack;
 import net.irisshaders.iris.api.v0.IrisApi;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
@@ -20,6 +11,15 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.gui.GuiUtil;
+import us.z1x.lucerna.gui.NavigationController;
+import us.z1x.lucerna.gui.element.LucernaObjectSelectionList;
+import us.z1x.lucerna.gui.element.ShaderPackOptionList;
+import us.z1x.lucerna.gui.element.ShaderPackSelectionList;
+import us.z1x.lucerna.gui.element.widget.AbstractElementWidget;
+import us.z1x.lucerna.gui.element.widget.CommentedElementWidget;
+import us.z1x.lucerna.shaderpack.ShaderPack;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,7 +40,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
     private static final int HIDE_GUI_BUTTON = 5;
 
     private final Screen parent;
-    private final String irisText;
+    private final String lucernaText;
 
     private ShaderPackSelectionList shaderPackList;
 
@@ -65,14 +65,14 @@ public class ShaderPackScreen extends Screen implements HudHideable {
     public ShaderPackScreen(Screen parent) {
         this.parent = parent;
 
-        String irisName = Iris.MODNAME + " " + Iris.getVersion();
+        String lucernaName = Lucerna.MODNAME + " " + Lucerna.getVersion();
 
-        if (irisName.contains("-development-environment")) {
+        if (lucernaName.contains("-development-environment")) {
             this.developmentText = Formatting.GOLD + "Development Environment";
-            irisName = irisName.replace("-development-environment", "");
+            lucernaName = lucernaName.replace("-development-environment", "");
         }
 
-        this.irisText = Formatting.GRAY + irisName;
+        this.lucernaText = Formatting.GRAY + lucernaName;
 
         refreshForChangedPack();
     }
@@ -92,9 +92,9 @@ public class ShaderPackScreen extends Screen implements HudHideable {
         super.render(mouseX, mouseY, delta);
 
         if (!this.guiHidden) {
-            drawCenteredString(this.textRenderer, I18n.translate("options.iris.shaderPackSelection.title"), (int) (this.width * 0.5), 8, 0xFFFFFF);
+            drawCenteredString(this.textRenderer, I18n.translate("options.lucerna.shaderPackSelection.title"), (int) (this.width * 0.5), 8, 0xFFFFFF);
 
-            String subtitle = I18n.translate(optionMenuOpen ? "pack.iris.configure.title" : "pack.iris.select.title");
+            String subtitle = I18n.translate(optionMenuOpen ? "pack.lucerna.configure.title" : "pack.lucerna.select.title");
 
             drawCenteredString(this.textRenderer, Formatting.GRAY + "" + Formatting.ITALIC + subtitle, (int) (this.width * 0.5), 21, 0xFFFFFF);
 
@@ -111,16 +111,16 @@ public class ShaderPackScreen extends Screen implements HudHideable {
         }
 
         if (this.hideGuiButton != null && this.hideGuiButton.isHovered() && this.guiButtonHoverTimer >= 10) {
-            String showOrHide = I18n.translate(this.guiHidden ? "options.iris.gui.show" : "options.iris.gui.hide");
+            String showOrHide = I18n.translate(this.guiHidden ? "options.lucerna.gui.show" : "options.lucerna.gui.hide");
 
             TOP_LAYER_RENDER_QUEUE.add(() -> this.renderTooltip(showOrHide, mouseX, mouseY));
         }
 
         if (this.developmentText != null) {
             this.textRenderer.drawWithShadow(developmentText, 2, this.height - 10, 0xFFFFFF);
-            this.textRenderer.drawWithShadow(irisText, 2, this.height - 20, 0xFFFFFF);
+            this.textRenderer.drawWithShadow(lucernaText, 2, this.height - 20, 0xFFFFFF);
         } else {
-            this.textRenderer.drawWithShadow(irisText, 2, this.height - 10, 0xFFFFFF);
+            this.textRenderer.drawWithShadow(lucernaText, 2, this.height - 10, 0xFFFFFF);
         }
 
         for (Runnable render : TOP_LAYER_RENDER_QUEUE) {
@@ -137,8 +137,8 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 
         this.shaderPackList = new ShaderPackSelectionList(this, this.minecraft, this.width, this.height, 32, this.height - 58, 0, this.width);
 
-        if (Iris.getCurrentPack().isPresent() && this.navigation != null) {
-            ShaderPack currentPack = Iris.getCurrentPack().get();
+        if (Lucerna.getCurrentPack().isPresent() && this.navigation != null) {
+            ShaderPack currentPack = Lucerna.getCurrentPack().get();
 
             this.shaderOptionList = new ShaderPackOptionList(this, this.navigation, currentPack, this.minecraft, this.width, this.height, 32, this.height - 58, 0, this.width);
             this.navigation.setActiveOptionList(this.shaderOptionList);
@@ -165,16 +165,16 @@ public class ShaderPackScreen extends Screen implements HudHideable {
                 I18n.translate("gui.done")));
 
             this.buttons.add(new ButtonWidget(APPLY_BUTTON, bottomCenter, this.height - 27, 100, 20,
-                I18n.translate("options.iris.apply")));
+                I18n.translate("options.lucerna.apply")));
 
             this.buttons.add(new ButtonWidget(CANCEL_BUTTON, bottomCenter - 104, this.height - 27, 100, 20,
                 I18n.translate("gui.cancel")));
 
             this.buttons.add(new ButtonWidget(OPEN_FOLDER_BUTTON, topCenter - 78, this.height - 51, 152, 20,
-                I18n.translate("options.iris.openShaderPackFolder")));
+                I18n.translate("options.lucerna.openShaderPackFolder")));
 
             this.screenSwitchButton = new ButtonWidget(SCREEN_SWITCH_BUTTON, topCenter + 78, this.height - 51, 152, 20,
-                I18n.translate("options.iris.shaderPackList"));
+                I18n.translate("options.lucerna.shaderPackList"));
             this.buttons.add(this.screenSwitchButton);
 
             refreshScreenSwitchButton();
@@ -197,7 +197,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
                 public void render(Minecraft minecraft, int mouseX, int mouseY) {
                     this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
 
-                    GuiUtil.bindIrisWidgetsTexture();
+                    GuiUtil.bindWidgetsTexture();
                     GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
                     GlStateManager.enableBlend();
                     GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -212,7 +212,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
         this.hoveredElementCommentTimer = 0;
     }
 
-    private IrisObjectSelectionList<?> getActiveList() {
+    private LucernaObjectSelectionList<?> getActiveList() {
         if (optionMenuOpen && this.shaderOptionList != null) {
             return this.shaderOptionList;
         }
@@ -278,13 +278,14 @@ public class ShaderPackScreen extends Screen implements HudHideable {
     }
 
     public void refreshForChangedPack() {
-        if (Iris.getCurrentPack().isPresent()) {
-            ShaderPack currentPack = Iris.getCurrentPack().get();
+        if (Lucerna.getCurrentPack().isPresent()) {
+            ShaderPack currentPack = Lucerna.getCurrentPack().get();
 
-            this.navigation = new NavigationController(currentPack.getMenuContainer());
+            this.navigation = new NavigationController();
 
             if (this.shaderOptionList != null) {
-                this.shaderOptionList.applyShaderPack(currentPack);
+                this.shaderOptionList.applyShaderPack(currentPack, this.navigation);
+                this.navigation.setActiveOptionList(this.shaderOptionList);
                 this.shaderOptionList.rebuild();
             }
         } else {
@@ -296,7 +297,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 
     public void refreshScreenSwitchButton() {
         if (this.screenSwitchButton != null) {
-            this.screenSwitchButton.message = I18n.translate(optionMenuOpen ? "options.iris.shaderPackList" : "options.iris.shaderPackSettings");
+            this.screenSwitchButton.message = I18n.translate(optionMenuOpen ? "options.lucerna.shaderPackList" : "options.lucerna.shaderPackSettings");
             this.screenSwitchButton.active = optionMenuOpen || shaderPackList.getTopButtonRow().shadersEnabled;
         }
     }
@@ -363,17 +364,17 @@ public class ShaderPackScreen extends Screen implements HudHideable {
         String name = entry.getPackName();
 
         // a different pack drops the pending options so they never apply to the wrong pack
-        if (!name.equals(Iris.getCurrentPackName())) {
-            Iris.clearShaderPackOptionQueue();
+        if (!name.equals(Lucerna.getCurrentPackName())) {
+            Lucerna.clearShaderPackOptionQueue();
         }
 
         boolean enabled = this.shaderPackList.getTopButtonRow().shadersEnabled;
 
-        String previousPackName = Iris.getIrisConfig().getShaderPackName().orElse(null);
-        boolean previousShadersEnabled = Iris.getIrisConfig().areShadersEnabled();
+        String previousPackName = Lucerna.getLucernaConfig().getShaderPackName().orElse(null);
+        boolean previousShadersEnabled = Lucerna.getLucernaConfig().areShadersEnabled();
 
-        if (!name.equals(previousPackName) || enabled != previousShadersEnabled || !Iris.getShaderPackOptionQueue().isEmpty() || Iris.shouldResetShaderPackOptionsOnNextReload()) {
-            Iris.getIrisConfig().setShaderPackName(name);
+        if (!name.equals(previousPackName) || enabled != previousShadersEnabled || !Lucerna.getShaderPackOptionQueue().isEmpty() || Lucerna.shouldResetShaderPackOptionsOnNextReload()) {
+            Lucerna.getLucernaConfig().setShaderPackName(name);
             IrisApi.getInstance().getConfig().setShadersEnabledAndApply(enabled);
         }
 
@@ -381,11 +382,11 @@ public class ShaderPackScreen extends Screen implements HudHideable {
     }
 
     private void discardChanges() {
-        Iris.clearShaderPackOptionQueue();
+        Lucerna.clearShaderPackOptionQueue();
     }
 
     private void openShaderPackFolder() {
-        Sys.openURL(Iris.getShaderpacksDirectoryManager().getDirectoryUri().toString());
+        Sys.openURL(Lucerna.getShaderpacksDirectoryManager().getDirectoryUri().toString());
     }
 
     public void setElementHoveredStatus(AbstractElementWidget<?> widget, boolean hovered) {

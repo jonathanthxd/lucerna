@@ -1,9 +1,9 @@
 package us.z1x.lucerna.gl.uniform;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 
 import java.util.function.Supplier;
 
@@ -48,7 +48,7 @@ public class Vector3Uniform extends Uniform {
 
         if (!newValue.equals(cachedValue)) {
             cachedValue.set(newValue.x(), newValue.y(), newValue.z());
-            IrisRenderSystem.uniform3f(location, cachedValue.x(), cachedValue.y(), cachedValue.z());
+            LucernaRenderSystem.uniform3f(location, cachedValue.x(), cachedValue.y(), cachedValue.z());
         }
     }
 }

@@ -1,10 +1,10 @@
 package us.z1x.lucerna.gl.image;
 
-import us.z1x.lucerna.pipeline.CustomTextureManager;
-import us.z1x.lucerna.shaderpack.ImageInformation;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL12C;
 import org.lwjgl.opengl.GL44C;
+import us.z1x.lucerna.pipeline.CustomTextureManager;
+import us.z1x.lucerna.shaderpack.ImageInformation;
 
 import java.nio.ByteBuffer;
 

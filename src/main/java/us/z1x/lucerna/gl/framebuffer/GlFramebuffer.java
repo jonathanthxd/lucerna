@@ -2,13 +2,13 @@ package us.z1x.lucerna.gl.framebuffer;
 
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import us.z1x.lucerna.gl.GlResource;
-import us.z1x.lucerna.gl.IrisRenderSystem;
-import us.z1x.lucerna.gl.texture.DepthBufferFormat;
-import us.z1x.lucerna.texture.TextureInfoCache;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL30C;
+import us.z1x.lucerna.gl.GlResource;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
+import us.z1x.lucerna.gl.texture.DepthBufferFormat;
+import us.z1x.lucerna.texture.TextureInfoCache;
 
 public class GlFramebuffer extends GlResource {
     private final Int2IntMap attachments;
@@ -17,7 +17,7 @@ public class GlFramebuffer extends GlResource {
     private boolean hasDepthAttachment;
 
     public GlFramebuffer() {
-        super(IrisRenderSystem.createFramebuffer());
+        super(LucernaRenderSystem.createFramebuffer());
 
         this.attachments = new Int2IntArrayMap();
         this.maxDrawBuffers = GL11.glGetInteger(GL30C.GL_MAX_DRAW_BUFFERS);
@@ -32,9 +32,9 @@ public class GlFramebuffer extends GlResource {
         int fb = getGlId();
 
         if (depthBufferFormat.isCombinedStencil()) {
-            IrisRenderSystem.framebufferTexture2D(fb, GL30C.GL_FRAMEBUFFER, GL30C.GL_DEPTH_STENCIL_ATTACHMENT, GL30C.GL_TEXTURE_2D, texture, 0);
+            LucernaRenderSystem.framebufferTexture2D(fb, GL30C.GL_FRAMEBUFFER, GL30C.GL_DEPTH_STENCIL_ATTACHMENT, GL30C.GL_TEXTURE_2D, texture, 0);
         } else {
-            IrisRenderSystem.framebufferTexture2D(fb, GL30C.GL_FRAMEBUFFER, GL30C.GL_DEPTH_ATTACHMENT, GL30C.GL_TEXTURE_2D, texture, 0);
+            LucernaRenderSystem.framebufferTexture2D(fb, GL30C.GL_FRAMEBUFFER, GL30C.GL_DEPTH_ATTACHMENT, GL30C.GL_TEXTURE_2D, texture, 0);
         }
 
         this.hasDepthAttachment = true;
@@ -43,12 +43,12 @@ public class GlFramebuffer extends GlResource {
     public void addColorAttachment(int index, int texture) {
         int fb = getGlId();
 
-        IrisRenderSystem.framebufferTexture2D(fb, GL30C.GL_FRAMEBUFFER, GL30C.GL_COLOR_ATTACHMENT0 + index, GL30C.GL_TEXTURE_2D, texture, 0);
+        LucernaRenderSystem.framebufferTexture2D(fb, GL30C.GL_FRAMEBUFFER, GL30C.GL_COLOR_ATTACHMENT0 + index, GL30C.GL_TEXTURE_2D, texture, 0);
         attachments.put(index, texture);
     }
 
     public void noDrawBuffers() {
-        IrisRenderSystem.drawBuffers(getGlId(), new int[] { GL30C.GL_NONE });
+        LucernaRenderSystem.drawBuffers(getGlId(), new int[] { GL30C.GL_NONE });
     }
 
     public void drawBuffers(int[] buffers) {
@@ -67,35 +67,23 @@ public class GlFramebuffer extends GlResource {
             glBuffers[index++] = GL30C.GL_COLOR_ATTACHMENT0 + buffer;
         }
 
-        IrisRenderSystem.drawBuffers(getGlId(), glBuffers);
+        LucernaRenderSystem.drawBuffers(getGlId(), glBuffers);
     }
 
     public void readBuffer(int buffer) {
-        IrisRenderSystem.readBuffer(getGlId(), GL30C.GL_COLOR_ATTACHMENT0 + buffer);
-    }
-
-    public int getColorAttachment(int index) {
-        return attachments.get(index);
+        LucernaRenderSystem.readBuffer(getGlId(), GL30C.GL_COLOR_ATTACHMENT0 + buffer);
     }
 
     public boolean hasDepthAttachment() {
         return hasDepthAttachment;
     }
 
-    public int getColorAttachmentFramebuffer() {
-        return getGlId();
-    }
-
     public void bind() {
-        IrisRenderSystem.bindFramebuffer(GL30C.GL_FRAMEBUFFER, getGlId());
+        LucernaRenderSystem.bindFramebuffer(GL30C.GL_FRAMEBUFFER, getGlId());
     }
 
     public void bindAsReadBuffer() {
-        IrisRenderSystem.bindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, getGlId());
-    }
-
-    public void bindAsDrawBuffer() {
-        IrisRenderSystem.bindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, getGlId());
+        LucernaRenderSystem.bindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, getGlId());
     }
 
     protected void destroyInternal() {

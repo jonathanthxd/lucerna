@@ -2,7 +2,7 @@ package us.z1x.lucerna.shaderpack.include;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import us.z1x.lucerna.Iris;
+import us.z1x.lucerna.Lucerna;
 import us.z1x.lucerna.shaderpack.error.RusticError;
 import us.z1x.lucerna.shaderpack.transform.line.LineTransform;
 
@@ -153,7 +153,7 @@ public class IncludeGraph {
                     "\n  = note: #include directives are resolved before any other preprocessor directives, any form of #include guard will not work" +
                         "\n  = note: other cycles may still exist, only the first detected non-trivial cycle will be reported");
 
-                Iris.logger.error(error.toString());
+                Lucerna.logger.error(error.toString());
 
                 throw new IllegalStateException("Cycle detected in #include graph, see previous messages for details");
             }

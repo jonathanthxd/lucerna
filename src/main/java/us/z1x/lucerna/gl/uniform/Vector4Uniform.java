@@ -1,8 +1,8 @@
 package us.z1x.lucerna.gl.uniform;
 
-import us.z1x.lucerna.gl.IrisRenderSystem;
-import us.z1x.lucerna.gl.state.ValueUpdateNotifier;
 import org.joml.Vector4f;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
+import us.z1x.lucerna.gl.state.ValueUpdateNotifier;
 
 import java.util.function.Supplier;
 
@@ -35,7 +35,7 @@ public class Vector4Uniform extends Uniform {
 
         if (!newValue.equals(cachedValue)) {
             cachedValue.set(newValue.x(), newValue.y(), newValue.z(), newValue.w());
-            IrisRenderSystem.uniform4f(location, cachedValue.x(), cachedValue.y(), cachedValue.z(), cachedValue.w());
+            LucernaRenderSystem.uniform4f(location, cachedValue.x(), cachedValue.y(), cachedValue.z(), cachedValue.w());
         }
     }
 }

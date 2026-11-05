@@ -37,7 +37,6 @@ class InstancedEntityTransformer {
         String out = modern ? "out" : "varying";
 
         replaceAttribute(t, tree, root, "mc_Entity", "vec4(-1.0, -1.0, 0.0, 1.0)");
-        replaceAttribute(t, tree, root, "at_tangent", "vec4(1.0, 0.0, 0.0, 1.0)");
         replaceAttribute(t, tree, root, "at_midBlock", "vec4(0.0)");
         removeUniform(t, root, "entityColor");
 
@@ -91,6 +90,12 @@ class InstancedEntityTransformer {
         int midTexCoord = removeAttribute(t, root, "mc_midTexCoord");
         if (midTexCoord >= 0) {
             root.replaceReferenceExpressions(t, "mc_midTexCoord", "vec4(lucerna_texture(), 0.0, 1.0)" + SWIZZLES[midTexCoord]);
+        }
+
+        // instanced models have no tangent stream, so take any axis in the face plane
+        int tangent = removeAttribute(t, root, "at_tangent");
+        if (tangent >= 0) {
+            root.replaceReferenceExpressions(t, "at_tangent", "vec4(normalize(cross(vec3(0.0, 1.0, 0.001), lucerna_normal())), 1.0)" + SWIZZLES[tangent]);
         }
 
         root.rename("ftransform", "lucerna_ftransform");
@@ -152,7 +157,7 @@ class InstancedEntityTransformer {
         tree.prependMain(t, "float lucerna_alpha = (" + sample + "(uTexture, lucerna_texCoord) * lucerna_color).a;");
 
         // glint and charged layers blend onto the shaded entity, the other draw buffers are masked while they draw
-        String output = SodiumTerrainTransformer.findFragmentOutput(root);
+        String output = CeleritasTerrainTransformer.findFragmentOutput(root);
         String effect = output != null ? output + " = lucerna_effect();" : "discard;";
         tree.appendMain(t, "if (uGlintPass >= 0 || uItemGlintPass >= 0 || uChargePass != 0) " + effect);
         tree.appendMain(t, "if (" + NEVER + " && " + sample + "(uLightmap, vec2(0.0)).r + u_FogColor.x + u_FogDensity + u_FogStart + u_FogEnd + float(u_FogShape) + float(uLit) + float(uLightmapped) > 0.0) discard;");

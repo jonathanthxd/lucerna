@@ -1,7 +1,8 @@
 package us.z1x.lucerna.gl.program;
 
 import com.google.common.collect.ImmutableSet;
-import us.z1x.lucerna.gl.IrisRenderSystem;
+import org.jetbrains.annotations.Nullable;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 import us.z1x.lucerna.gl.image.ImageHolder;
 import us.z1x.lucerna.gl.sampler.SamplerHolder;
 import us.z1x.lucerna.gl.shader.GlShader;
@@ -9,7 +10,6 @@ import us.z1x.lucerna.gl.shader.ProgramCreator;
 import us.z1x.lucerna.gl.shader.ShaderType;
 import us.z1x.lucerna.gl.state.ValueUpdateNotifier;
 import us.z1x.lucerna.gl.texture.InternalTextureFormat;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.function.IntSupplier;
 
@@ -27,11 +27,16 @@ public class ProgramBuilder extends ProgramUniforms.Builder implements SamplerHo
     }
 
     public void bindAttributeLocation(int index, String name) {
-        IrisRenderSystem.bindAttributeLocation(program, index, name);
+        LucernaRenderSystem.bindAttributeLocation(program, index, name);
     }
 
     public static ProgramBuilder begin(String name, @Nullable String vertexSource, @Nullable String geometrySource,
                                        @Nullable String fragmentSource, ImmutableSet<Integer> reservedTextureUnits) {
+        int pooled = ProgramPool.INSTANCE.take(vertexSource, geometrySource, fragmentSource);
+
+        if (pooled != -1) {
+            return new ProgramBuilder(name, pooled, reservedTextureUnits);
+        }
 
         GlShader vertex;
         GlShader geometry;
@@ -68,7 +73,7 @@ public class ProgramBuilder extends ProgramUniforms.Builder implements SamplerHo
 
     public static ProgramBuilder beginCompute(String name, @Nullable String source, ImmutableSet<Integer> reservedTextureUnits) {
 
-        if (!IrisRenderSystem.supportsCompute()) {
+        if (!LucernaRenderSystem.supportsCompute()) {
             throw new IllegalStateException("This PC does not support compute shaders, but it's attempting to be used???");
         }
 

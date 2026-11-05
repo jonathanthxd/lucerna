@@ -26,6 +26,7 @@ public final class ArgentumCompat {
             disable(config);
         } else {
             restore(config);
+            instancingDisabled = false;
         }
 
         applied = active;
@@ -50,6 +51,10 @@ public final class ArgentumCompat {
         config.fasterClouds = false;
         config.fasterWeather = false;
         config.fasterEndPortals = false;
+
+        if (instancingDisabled) {
+            config.entityInstancing = false;
+        }
     }
 
     // for shader packs whose entity program cannot draw argentum's instanced models
@@ -64,7 +69,6 @@ public final class ArgentumCompat {
 
     private static void restore(ArgentumConfig config) {
         if (instancingDisabled) {
-            instancingDisabled = false;
             config.entityInstancing = true;
         }
 

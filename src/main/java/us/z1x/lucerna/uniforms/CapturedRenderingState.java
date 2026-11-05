@@ -1,15 +1,15 @@
 package us.z1x.lucerna.uniforms;
 
-import us.z1x.lucerna.gl.state.ValueUpdateNotifier;
 import net.minecraft.client.Minecraft;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.joml.Vector4f;
+import us.z1x.lucerna.gl.state.ValueUpdateNotifier;
 
 public class CapturedRenderingState {
     public static final CapturedRenderingState INSTANCE = new CapturedRenderingState();
 
-    private static final Vector3d ZERO_VECTOR_3d = new Vector3d();
+    private static final Vector3d ZERO_VECTOR_3D = new Vector3d();
 
     private final Matrix4f gbufferModelView = new Matrix4f();
     private final Matrix4f gbufferProjection = new Matrix4f();
@@ -58,7 +58,7 @@ public class CapturedRenderingState {
 
     public Vector3d getFogColor() {
         if (Minecraft.getInstance().world == null) {
-            return ZERO_VECTOR_3d;
+            return ZERO_VECTOR_3D;
         }
 
         return fogColor;

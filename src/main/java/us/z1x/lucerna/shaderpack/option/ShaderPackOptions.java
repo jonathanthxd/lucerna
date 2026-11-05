@@ -35,7 +35,7 @@ public class ShaderPackOptions {
             Set<String> referencedBooleanDefinesU = Collections.unmodifiableSet(referencedBooleanDefines);
 
             annotations.forEach((path, annotatedSource) -> {
-                OptionSet set = annotatedSource.getOptionSet(path, referencedBooleanDefinesU);
+                OptionSet set = annotatedSource.getOptionSet(referencedBooleanDefinesU);
                 setBuilder.addAll(set);
             });
 

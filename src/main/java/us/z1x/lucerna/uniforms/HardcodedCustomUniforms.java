@@ -1,19 +1,21 @@
 package us.z1x.lucerna.uniforms;
 
-import us.z1x.lucerna.gl.uniform.UniformHolder;
-import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
-import us.z1x.lucerna.uniforms.transforms.SmoothedFloat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.living.player.LocalClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.LightType;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.SwampBiome;
 import org.joml.Math;
+import us.z1x.lucerna.gl.uniform.UniformHolder;
+import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
+import us.z1x.lucerna.uniforms.transforms.SmoothedFloat;
 
 // expressions copied from bsl and complementary
 public class HardcodedCustomUniforms {
+    private static final BlockPos.Mutable EYE_BLOCK_POS = new BlockPos.Mutable();
     private static final Minecraft client = Minecraft.getInstance();
     private static Biome storedBiome;
 
@@ -121,7 +123,7 @@ public class HardcodedCustomUniforms {
             return 0;
         }
 
-        BlockPos eyeBlockPos = new BlockPos(camera.x, camera.y + camera.getEyeHeight(), camera.z);
+        BlockPos eyeBlockPos = EYE_BLOCK_POS.set(MathHelper.floor(camera.x), MathHelper.floor(camera.y + camera.getEyeHeight()), MathHelper.floor(camera.z));
 
         int skyLight = client.world.getBrightness(LightType.SKY, eyeBlockPos);
 
@@ -132,7 +134,7 @@ public class HardcodedCustomUniforms {
         float difX = (float) (tracker.getCurrentCameraPosition().x - tracker.getPreviousCameraPosition().x);
         float difY = (float) (tracker.getCurrentCameraPosition().y - tracker.getPreviousCameraPosition().y);
         float difZ = (float) (tracker.getCurrentCameraPosition().z - tracker.getPreviousCameraPosition().z);
-        return Math.sqrt(difX*difX + difY*difY + difZ*difZ);
+        return Math.sqrt(difX * difX + difY * difY + difZ * difZ);
     }
 
     private static SmoothedFloat getStarter(CameraUniforms.CameraPositionTracker tracker, FrameUpdateNotifier notifier) {
@@ -152,15 +154,15 @@ public class HardcodedCustomUniforms {
     }
 
     private static float getTimeBrightness() {
-        return (float) java.lang.Math.max(java.lang.Math.sin(getTimeAngle() * java.lang.Math.PI * 2.0),0.0);
+        return (float) Math.max(Math.sin(getTimeAngle() * Math.PI * 2.0), 0.0);
     }
 
     private static float getMoonBrightness() {
-        return (float) java.lang.Math.max(java.lang.Math.sin(getTimeAngle() * java.lang.Math.PI * (-2.0)),0.0);
+        return (float) Math.max(Math.sin(getTimeAngle() * Math.PI * (-2.0)), 0.0);
     }
 
     private static float getShadowFade() {
-        return (float) Math.clamp(0.0, 1.0, 1.0 - (java.lang.Math.abs(java.lang.Math.abs(CelestialUniforms.getSunAngle() - 0.5) - 0.25) - 0.23) * 100.0);
+        return (float) Math.clamp(0.0, 1.0, 1.0 - (Math.abs(Math.abs(CelestialUniforms.getSunAngle() - 0.5) - 0.25) - 0.23) * 100.0);
     }
 
     private static SmoothedFloat rainStrengthS(FrameUpdateNotifier updateNotifier, float halfLifeUp, float halfLifeDown) {
@@ -181,10 +183,6 @@ public class HardcodedCustomUniforms {
     private static float getBlindFactor() {
         float blindFactorSqrt = (float) Math.clamp(0.0, 1.0, CommonUniforms.getBlindness() * 2.0 - 1.0);
         return blindFactorSqrt * blindFactorSqrt;
-    }
-
-    private static float frac(float value) {
-        return java.lang.Math.abs(value % 1);
     }
 
     private static float getAdjTime() {

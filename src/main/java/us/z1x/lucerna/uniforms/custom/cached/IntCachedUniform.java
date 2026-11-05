@@ -1,9 +1,8 @@
 package us.z1x.lucerna.uniforms.custom.cached;
 
-import kroppeb.stareval.function.FunctionReturn;
-import kroppeb.stareval.function.Type;
-import us.z1x.lucerna.gl.IrisRenderSystem;
-import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
+import us.z1x.lucerna.stareval.function.FunctionReturn;
+import us.z1x.lucerna.stareval.function.Type;
 
 import java.util.function.IntSupplier;
 
@@ -12,8 +11,8 @@ public class IntCachedUniform extends CachedUniform {
     final private IntSupplier supplier;
     private int cached;
 
-    public IntCachedUniform(String name, UniformUpdateFrequency updateFrequency, IntSupplier supplier) {
-        super(name, updateFrequency);
+    public IntCachedUniform(String name, IntSupplier supplier) {
+        super(name);
         this.supplier = supplier;
     }
 
@@ -26,7 +25,7 @@ public class IntCachedUniform extends CachedUniform {
 
     @Override
     public void push(int location) {
-        IrisRenderSystem.uniform1i(location, this.cached);
+        LucernaRenderSystem.uniform1i(location, this.cached);
     }
 
     @Override

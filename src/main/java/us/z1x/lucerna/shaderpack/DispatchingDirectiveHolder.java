@@ -2,10 +2,10 @@ package us.z1x.lucerna.shaderpack;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import it.unimi.dsi.fastutil.floats.FloatConsumer;
-import us.z1x.lucerna.Iris;
 import org.joml.Vector2f;
 import org.joml.Vector3i;
 import org.joml.Vector4f;
+import us.z1x.lucerna.Lucerna;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +45,7 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
                 } else if ("false".equals(value)) {
                     consumer.accept(false);
                 } else {
-                    Iris.logger.error("Failed to process " + directive + ": " + value + " is not a valid boolean value");
+                    Lucerna.logger.error("Failed to process {}: {} is not a valid boolean value", directive, value);
                 }
 
                 return;
@@ -71,7 +71,7 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
                 try {
                     intConsumer.accept(Integer.parseInt(value));
                 } catch (NumberFormatException e) {
-                    Iris.logger.error("Failed to process " + directive, e);
+                    Lucerna.logger.error("Failed to process {}", directive, e);
                 }
 
                 return;
@@ -87,7 +87,7 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
                 try {
                     consumer.accept(Float.parseFloat(value));
                 } catch (NumberFormatException e) {
-                    Iris.logger.error("Failed to process " + directive, e);
+                    Lucerna.logger.error("Failed to process {}", directive, e);
                 }
 
                 return;
@@ -102,13 +102,13 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
 
             if (consumer != null) {
                 if (!value.startsWith("vec2")) {
-                    Iris.logger.error("Failed to process " + directive + ": value was not a valid vec2 constructor");
+                    Lucerna.logger.error("Failed to process {}: value was not a valid vec2 constructor", directive);
                 }
 
                 String vec2Args = value.substring("vec2".length()).trim();
 
                 if (!vec2Args.startsWith("(") || !vec2Args.endsWith(")")) {
-                    Iris.logger.error("Failed to process " + directive + ": value was not a valid vec2 constructor");
+                    Lucerna.logger.error("Failed to process {}: value was not a valid vec2 constructor", directive);
                 }
 
                 vec2Args = vec2Args.substring(1, vec2Args.length() - 1);
@@ -120,8 +120,7 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
                 }
 
                 if (parts.length != 2) {
-                    Iris.logger.error("Failed to process " + directive +
-                        ": expected 2 arguments to a vec2 constructor, got " + parts.length);
+                    Lucerna.logger.error("Failed to process {}: expected 2 arguments to a vec2 constructor, got {}", directive, parts.length);
                 }
 
                 try {
@@ -130,7 +129,7 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
                         Float.parseFloat(parts[1])
                     ));
                 } catch (NumberFormatException e) {
-                    Iris.logger.error("Failed to process " + directive, e);
+                    Lucerna.logger.error("Failed to process {}", directive, e);
                 }
 
                 return;
@@ -145,13 +144,13 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
 
             if (consumer != null) {
                 if (!value.startsWith("ivec3")) {
-                    Iris.logger.error("Failed to process " + directive + ": value was not a valid ivec3 constructor");
+                    Lucerna.logger.error("Failed to process {}: value was not a valid ivec3 constructor", directive);
                 }
 
                 String ivec3Args = value.substring("ivec3".length()).trim();
 
                 if (!ivec3Args.startsWith("(") || !ivec3Args.endsWith(")")) {
-                    Iris.logger.error("Failed to process " + directive + ": value was not a valid ivec3 constructor");
+                    Lucerna.logger.error("Failed to process {}: value was not a valid ivec3 constructor", directive);
                 }
 
                 ivec3Args = ivec3Args.substring(1, ivec3Args.length() - 1);
@@ -163,8 +162,7 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
                 }
 
                 if (parts.length != 3) {
-                    Iris.logger.error("Failed to process " + directive +
-                        ": expected 3 arguments to a ivec3 constructor, got " + parts.length);
+                    Lucerna.logger.error("Failed to process {}: expected 3 arguments to a ivec3 constructor, got {}", directive, parts.length);
                 }
 
                 try {
@@ -174,7 +172,7 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
                         Integer.parseInt(parts[2])
                     ));
                 } catch (NumberFormatException e) {
-                    Iris.logger.error("Failed to process " + directive, e);
+                    Lucerna.logger.error("Failed to process {}", directive, e);
                 }
 
                 return;
@@ -189,13 +187,13 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
 
             if (consumer != null) {
                 if (!value.startsWith("vec4")) {
-                    Iris.logger.error("Failed to process " + directive + ": value was not a valid vec4 constructor");
+                    Lucerna.logger.error("Failed to process {}: value was not a valid vec4 constructor", directive);
                 }
 
                 String vec4Args = value.substring("vec4".length()).trim();
 
                 if (!vec4Args.startsWith("(") || !vec4Args.endsWith(")")) {
-                    Iris.logger.error("Failed to process " + directive + ": value was not a valid vec4 constructor");
+                    Lucerna.logger.error("Failed to process {}: value was not a valid vec4 constructor", directive);
                 }
 
                 vec4Args = vec4Args.substring(1, vec4Args.length() - 1);
@@ -207,8 +205,7 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
                 }
 
                 if (parts.length != 4) {
-                    Iris.logger.error("Failed to process " + directive +
-                        ": expected 4 arguments to a vec4 constructor, got " + parts.length);
+                    Lucerna.logger.error("Failed to process {}: expected 4 arguments to a vec4 constructor, got {}", directive, parts.length);
                 }
 
                 try {
@@ -219,7 +216,7 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
                         Float.parseFloat(parts[3])
                     ));
                 } catch (NumberFormatException e) {
-                    Iris.logger.error("Failed to process " + directive, e);
+                    Lucerna.logger.error("Failed to process {}", directive, e);
                 }
 
                 return;
@@ -234,7 +231,7 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
 
     private void typeCheckHelper(String expected, Map<String, ? extends Object> candidates, ConstDirectiveParser.ConstDirective directive) {
         if (candidates.containsKey(directive.getKey())) {
-            Iris.logger.warn("Ignoring " + directive + " because it is of the wrong type, a type of " + expected + " is expected.");
+            Lucerna.logger.warn("Ignoring {} because it is of the wrong type, a type of {} is expected.", directive, expected);
         }
     }
 
@@ -272,16 +269,6 @@ public class DispatchingDirectiveHolder implements DirectiveHolder {
     @Override
     public void acceptConstFloatDirective(String name, FloatConsumer consumer) {
         floatConstVariables.put(name, consumer);
-    }
-
-    @Override
-    public void acceptConstVec2Directive(String name, Consumer<Vector2f> consumer) {
-        vec2ConstVariables.put(name, consumer);
-    }
-
-    @Override
-    public void acceptConstIVec3Directive(String name, Consumer<Vector3i> consumer) {
-        ivec3ConstVariables.put(name, consumer);
     }
 
     @Override

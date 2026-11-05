@@ -6,6 +6,7 @@ import java.util.Map;
 
 class Parameters extends JobParameters {
     public final Patch patch;
+    // set per stage during a transform, so it stays out of the cache key
     public PatchShaderType type;
     // raw custom textures as "SAMPLER3D colortex6" to the sampler that replaces declarations of that type
     public Map<String, String> textureRenames = Map.of();
@@ -19,7 +20,6 @@ class Parameters extends JobParameters {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((patch == null) ? 0 : patch.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
         result = prime * result + textureRenames.hashCode();
         return result;
     }
@@ -34,8 +34,6 @@ class Parameters extends JobParameters {
             return false;
         Parameters other = (Parameters) obj;
         if (patch != other.patch)
-            return false;
-        if (type != other.type)
             return false;
         return textureRenames.equals(other.textureRenames);
     }

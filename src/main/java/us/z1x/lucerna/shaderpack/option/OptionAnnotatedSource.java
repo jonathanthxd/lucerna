@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import us.z1x.lucerna.shaderpack.OptionalBoolean;
-import us.z1x.lucerna.shaderpack.include.AbsolutePackPath;
 import us.z1x.lucerna.shaderpack.option.values.OptionValues;
 import us.z1x.lucerna.shaderpack.parsing.ParsedString;
 import us.z1x.lucerna.shaderpack.transform.line.LineTransform;
@@ -335,45 +334,26 @@ public final class OptionAnnotatedSource {
         return stringOptions;
     }
 
-    public ImmutableMap<Integer, String> getDiagnostics() {
-        return diagnostics;
-    }
-
     public ImmutableMap<String, IntList> getBooleanDefineReferences() {
         return booleanDefineReferences;
     }
 
-    public OptionSet getOptionSet(AbsolutePackPath filePath, Set<String> booleanDefineReferences) {
+    public OptionSet getOptionSet(Set<String> booleanDefineReferences) {
         OptionSet.Builder builder = OptionSet.builder();
 
-        booleanOptions.forEach((lineIndex, option) -> {
+        booleanOptions.values().forEach(option -> {
             if (booleanDefineReferences.contains(option.getName())) {
-                OptionLocation location = new OptionLocation(filePath, lineIndex);
-                builder.addBooleanOption(location, option);
+                builder.addBooleanOption(option);
             }
         });
 
-        stringOptions.forEach((lineIndex, option) -> {
-            OptionLocation location = new OptionLocation(filePath, lineIndex);
-            builder.addStringOption(location, option);
-        });
+        stringOptions.values().forEach(builder::addStringOption);
 
         return builder.build();
     }
 
     public LineTransform asTransform(OptionValues values) {
         return (index, line) -> edit(values, index, line);
-    }
-
-    public String apply(OptionValues values) {
-        StringBuilder source = new StringBuilder();
-
-        for (int index = 0; index < lines.size(); index++) {
-            source.append(edit(values, index, lines.get(index)));
-            source.append('\n');
-        }
-
-        return source.toString();
     }
 
     private String edit(OptionValues values, int index, String existing) {

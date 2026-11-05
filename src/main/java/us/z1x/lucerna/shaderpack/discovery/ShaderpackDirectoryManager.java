@@ -1,6 +1,6 @@
 package us.z1x.lucerna.shaderpack.discovery;
 
-import us.z1x.lucerna.Iris;
+import us.z1x.lucerna.Lucerna;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,36 +18,6 @@ public class ShaderpackDirectoryManager {
         this.root = root;
     }
 
-    public void copyPackIntoDirectory(String name, Path source) throws IOException {
-        Path target = Iris.getShaderpacksDirectory().resolve(name);
-
-        Files.copy(source, target);
-
-        if (Files.isDirectory(source)) {
-            // plain loops since createDirectory throws IOException
-            // collect to a list to keep walk order, parents before children
-            try (Stream<Path> stream = Files.walk(source)) {
-                for (Path p : stream.filter(Files::isDirectory).collect(Collectors.toList())) {
-                    Path folder = source.relativize(p);
-
-                    if (Files.exists(folder)) {
-                        continue;
-                    }
-
-                    Files.createDirectory(target.resolve(folder));
-                }
-            }
-
-            try (Stream<Path> stream = Files.walk(source)) {
-                for (Path p : stream.filter(p -> !Files.isDirectory(p)).collect(Collectors.toSet())) {
-                    Path file = source.relativize(p);
-
-                    Files.copy(p, target.resolve(file));
-                }
-            }
-        }
-    }
-
     public Collection<String> enumerate() throws IOException {
         // not all systems sort directory listings, sort case-insensitively then naturally
         // chat formatting is ignored since some packs use it in their file names
@@ -60,7 +30,7 @@ public class ShaderpackDirectoryManager {
         };
 
         try (Stream<Path> list = Files.list(root)) {
-            return list.filter(Iris::isValidShaderpack)
+            return list.filter(Lucerna::isValidShaderpack)
                 .map(path -> path.getFileName().toString())
                 .sorted(comparator).collect(Collectors.toList());
         }

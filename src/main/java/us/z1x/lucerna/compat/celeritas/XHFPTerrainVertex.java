@@ -1,12 +1,12 @@
 package us.z1x.lucerna.compat.celeritas;
 
-import us.z1x.lucerna.vertices.ExtendedDataHelper;
-import us.z1x.lucerna.vertices.NormI8;
-import us.z1x.lucerna.vertices.NormalHelper;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
+import us.z1x.lucerna.vertices.ExtendedDataHelper;
+import us.z1x.lucerna.vertices.NormI8;
+import us.z1x.lucerna.vertices.NormalHelper;
 
 import static us.z1x.lucerna.compat.celeritas.XHFPModelVertexType.STRIDE;
 

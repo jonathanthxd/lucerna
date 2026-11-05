@@ -1,17 +1,17 @@
 package us.z1x.lucerna.gui.element;
 
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.gui.GuiUtil;
-import us.z1x.lucerna.gui.screen.ShaderPackScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.TextRenderer;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.Formatting;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.gui.GuiUtil;
+import us.z1x.lucerna.gui.screen.ShaderPackScreen;
 
 import java.util.Collection;
 import java.util.function.Function;
 
-public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackSelectionList.BaseEntry> {
+public class ShaderPackSelectionList extends LucernaObjectSelectionList<ShaderPackSelectionList.BaseEntry> {
     private final ShaderPackScreen screen;
     private final TopButtonRowEntry topButtonRow;
     private ShaderPackEntry applied = null;
@@ -20,7 +20,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
         super(client, width, height, top, bottom, left, right, 20);
 
         this.screen = screen;
-        this.topButtonRow = new TopButtonRowEntry(this, Iris.getIrisConfig().areShadersEnabled());
+        this.topButtonRow = new TopButtonRowEntry(this, Lucerna.getLucernaConfig().areShadersEnabled());
 
         refresh();
     }
@@ -41,9 +41,9 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
         Collection<String> names;
 
         try {
-            names = Iris.getShaderpacksDirectoryManager().enumerate();
+            names = Lucerna.getShaderpacksDirectoryManager().enumerate();
         } catch (Throwable e) {
-            Iris.logger.error("Error reading files while constructing selection UI", e);
+            Lucerna.logger.error("Error reading files while constructing selection UI", e);
 
             // untranslated on purpose, it only shows for https://github.com/IrisShaders/Iris/issues/785
             this.addLabelEntries(
@@ -64,6 +64,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
         this.addEntry(topButtonRow);
 
         topButtonRow.allowEnableShadersButton = names.size() > 0;
+        topButtonRow.enableDisableButton.text = topButtonRow.getEnableDisableLabel();
 
         int index = 0;
 
@@ -76,7 +77,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
     public void addPackEntry(int index, String name) {
         ShaderPackEntry entry = new ShaderPackEntry(index, this, name);
 
-        Iris.getIrisConfig().getShaderPackName().ifPresent(currentPackName -> {
+        Lucerna.getLucernaConfig().getShaderPackName().ifPresent(currentPackName -> {
             if (name.equals(currentPackName)) {
                 setSelected(entry);
                 setApplied(entry);
@@ -104,7 +105,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
         return topButtonRow;
     }
 
-    public static abstract class BaseEntry extends IrisObjectSelectionList.Entry {
+    public static abstract class BaseEntry extends LucernaObjectSelectionList.Entry {
         protected BaseEntry() {}
     }
 
@@ -197,15 +198,15 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
     public static class TopButtonRowEntry extends BaseEntry {
         private static final int REFRESH_BUTTON_WIDTH = 18;
 
-        private final String refreshShaderPacksLabel = Formatting.AQUA + I18n.translate("options.iris.refreshShaderPacks");
-        private final String nonePresentLabel = Formatting.GRAY + I18n.translate("options.iris.shaders.nonePresent");
-        private final String shadersDisabledLabel = I18n.translate("options.iris.shaders.disabled");
-        private final String shadersEnabledLabel = I18n.translate("options.iris.shaders.enabled");
+        private final String refreshShaderPacksLabel = Formatting.AQUA + I18n.translate("options.lucerna.refreshShaderPacks");
+        private final String nonePresentLabel = Formatting.GRAY + I18n.translate("options.lucerna.shaders.nonePresent");
+        private final String shadersDisabledLabel = I18n.translate("options.lucerna.shaders.disabled");
+        private final String shadersEnabledLabel = I18n.translate("options.lucerna.shaders.enabled");
 
         private final ShaderPackSelectionList list;
-        private final IrisElementRow buttons = new IrisElementRow();
+        private final LucernaElementRow buttons = new LucernaElementRow();
         private final EnableShadersButtonElement enableDisableButton;
-        private final IrisElementRow.Element refreshPacksButton;
+        private final LucernaElementRow.Element refreshPacksButton;
 
         public boolean allowEnableShadersButton = true;
         public boolean shadersEnabled;
@@ -224,7 +225,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
 
                         return false;
                     });
-            this.refreshPacksButton = new IrisElementRow.IconButtonElement(
+            this.refreshPacksButton = new LucernaElementRow.IconButtonElement(
                     GuiUtil.Icon.REFRESH,
                     button -> {
                         this.list.refresh();
@@ -258,7 +259,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
         }
 
         private String getEnableDisableLabel() {
-            return this.allowEnableShadersButton ? this.shadersEnabled ? shadersEnabledLabel : shadersDisabledLabel : nonePresentLabel;
+            return this.allowEnableShadersButton ? (this.shadersEnabled ? shadersEnabledLabel : shadersDisabledLabel) : nonePresentLabel;
         }
 
         @Override
@@ -267,10 +268,10 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
         }
 
         // offset so the label lines up with the rest of the menu
-        public static class EnableShadersButtonElement extends IrisElementRow.TextButtonElement {
+        public static class EnableShadersButtonElement extends LucernaElementRow.TextButtonElement {
             private int centerX;
 
-            public EnableShadersButtonElement(String text, Function<IrisElementRow.TextButtonElement, Boolean> onClick) {
+            public EnableShadersButtonElement(String text, Function<LucernaElementRow.TextButtonElement, Boolean> onClick) {
                 super(text, onClick);
             }
 

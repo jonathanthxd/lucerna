@@ -1,7 +1,12 @@
 package us.z1x.lucerna.postprocess;
 
 import com.google.common.collect.ImmutableSet;
-import us.z1x.lucerna.gl.IrisRenderSystem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.render.platform.GlStateManager;
+import org.apache.commons.io.IOUtils;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL21C;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 import us.z1x.lucerna.gl.framebuffer.GlFramebuffer;
 import us.z1x.lucerna.gl.program.Program;
 import us.z1x.lucerna.gl.program.ProgramBuilder;
@@ -12,11 +17,6 @@ import us.z1x.lucerna.gl.texture.InternalTextureFormat;
 import us.z1x.lucerna.gl.texture.PixelType;
 import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
 import us.z1x.lucerna.uniforms.SystemTimeUniforms;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.render.platform.GlStateManager;
-import org.apache.commons.io.IOUtils;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL21C;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -48,7 +48,7 @@ public class CenterDepthSampler {
         ProgramBuilder builder;
 
         try {
-            String fsh = new String(IOUtils.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream("/centerDepth.fsh"))), StandardCharsets.UTF_8);
+            String fsh = new String(IOUtils.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream("/assets/lucerna/shaders/centerDepth.fsh"))), StandardCharsets.UTF_8);
 
             if (GL.getCapabilities().OpenGL32) {
                 fsh = fsh.replace("VERSIONPLACEHOLDER", "150 compatibility");
@@ -56,7 +56,7 @@ public class CenterDepthSampler {
                 fsh = fsh.replace("#define IS_GL3", "");
                 fsh = fsh.replace("VERSIONPLACEHOLDER", "120");
             }
-            String vsh = new String(IOUtils.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream("/centerDepth.vsh"))), StandardCharsets.UTF_8);
+            String vsh = new String(IOUtils.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream("/assets/lucerna/shaders/centerDepth.vsh"))), StandardCharsets.UTF_8);
 
             builder = ProgramBuilder.begin("centerDepthSmooth", vsh, null, fsh, ImmutableSet.of(0, 1, 2));
         } catch (IOException e) {
@@ -95,12 +95,12 @@ public class CenterDepthSampler {
     }
 
     public void setupColorTexture(int texture, InternalTextureFormat format) {
-        IrisRenderSystem.texImage2D(texture, GL21C.GL_TEXTURE_2D, 0, format.getGlFormat(), 1, 1, 0, format.getPixelFormat().getGlFormat(), PixelType.FLOAT.getGlFormat(), null);
+        LucernaRenderSystem.texImage2D(texture, GL21C.GL_TEXTURE_2D, 0, format.getGlFormat(), 1, 1, 0, format.getPixelFormat().getGlFormat(), PixelType.FLOAT.getGlFormat(), null);
 
-        IrisRenderSystem.texParameteri(texture, GL21C.GL_TEXTURE_2D, GL21C.GL_TEXTURE_MIN_FILTER, GL21C.GL_LINEAR);
-        IrisRenderSystem.texParameteri(texture, GL21C.GL_TEXTURE_2D, GL21C.GL_TEXTURE_MAG_FILTER, GL21C.GL_LINEAR);
-        IrisRenderSystem.texParameteri(texture, GL21C.GL_TEXTURE_2D, GL21C.GL_TEXTURE_WRAP_S, GL21C.GL_CLAMP_TO_EDGE);
-        IrisRenderSystem.texParameteri(texture, GL21C.GL_TEXTURE_2D, GL21C.GL_TEXTURE_WRAP_T, GL21C.GL_CLAMP_TO_EDGE);
+        LucernaRenderSystem.texParameteri(texture, GL21C.GL_TEXTURE_2D, GL21C.GL_TEXTURE_MIN_FILTER, GL21C.GL_LINEAR);
+        LucernaRenderSystem.texParameteri(texture, GL21C.GL_TEXTURE_2D, GL21C.GL_TEXTURE_MAG_FILTER, GL21C.GL_LINEAR);
+        LucernaRenderSystem.texParameteri(texture, GL21C.GL_TEXTURE_2D, GL21C.GL_TEXTURE_WRAP_S, GL21C.GL_CLAMP_TO_EDGE);
+        LucernaRenderSystem.texParameteri(texture, GL21C.GL_TEXTURE_2D, GL21C.GL_TEXTURE_WRAP_T, GL21C.GL_CLAMP_TO_EDGE);
     }
 
     public int getCenterDepthTexture() {

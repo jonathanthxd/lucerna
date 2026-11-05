@@ -1,10 +1,10 @@
 package us.z1x.lucerna.uniforms;
 
-import us.z1x.lucerna.gl.uniform.UniformHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
+import us.z1x.lucerna.gl.uniform.UniformHolder;
 
 import java.util.Objects;
 
@@ -12,6 +12,8 @@ import static us.z1x.lucerna.gl.uniform.UniformUpdateFrequency.PER_FRAME;
 
 public final class CelestialUniforms {
     private final float sunPathRotation;
+    private final Matrix4f matrix = new Matrix4f();
+    private final Vector4f position = new Vector4f();
 
     public CelestialUniforms(float sunPathRotation) {
         this.sunPathRotation = sunPathRotation;
@@ -24,7 +26,7 @@ public final class CelestialUniforms {
             .uniformTruncated3f(PER_FRAME, "moonPosition", this::getMoonPosition)
             .uniform1f(PER_FRAME, "shadowAngle", CelestialUniforms::getShadowAngle)
             .uniformTruncated3f(PER_FRAME, "shadowLightPosition", this::getShadowLightPosition)
-            .uniformTruncated3f(PER_FRAME, "upPosition", CelestialUniforms::getUpPosition);
+            .uniformTruncated3f(PER_FRAME, "upPosition", this::getUpPosition);
     }
 
     public static float getSunAngle() {
@@ -64,34 +66,28 @@ public final class CelestialUniforms {
     }
 
     private Vector4f getCelestialPositionInWorldSpace(float y) {
-        Vector4f position = new Vector4f(0.0F, y, 0.0F, 0.0F);
-
         // same transform as renderSky, needed before vanilla applies it
-        return new Matrix4f()
+        return matrix.identity()
             .rotateY((float) Math.toRadians(-90.0F))
             .rotateZ((float) Math.toRadians(sunPathRotation))
             .rotateX((float) Math.toRadians(getSkyAngle() * 360.0F))
-            .transform(position);
+            .transform(position.set(0.0F, y, 0.0F, 0.0F));
     }
 
     private Vector4f getCelestialPosition(float y) {
-        Vector4f position = new Vector4f(0.0F, y, 0.0F, 0.0F);
-
         // same transform as renderSky, needed before vanilla applies it
-        return new Matrix4f(CapturedRenderingState.INSTANCE.getGbufferModelView())
+        return matrix.set(CapturedRenderingState.INSTANCE.getGbufferModelView())
             .rotateY((float) Math.toRadians(-90.0F))
             .rotateZ((float) Math.toRadians(sunPathRotation))
             .rotateX((float) Math.toRadians(getSkyAngle() * 360.0F))
-            .transform(position);
+            .transform(position.set(0.0F, y, 0.0F, 0.0F));
     }
 
-    private static Vector4f getUpPosition() {
-        Vector4f upVector = new Vector4f(0.0F, 100.0F, 0.0F, 0.0F);
-
+    private Vector4f getUpPosition() {
         // mirrors the fixed rotation of renderSky but skips the sky angle rotation
-        return new Matrix4f(CapturedRenderingState.INSTANCE.getGbufferModelView())
+        return matrix.set(CapturedRenderingState.INSTANCE.getGbufferModelView())
             .rotateY((float) Math.toRadians(-90.0F))
-            .transform(upVector);
+            .transform(position.set(0.0F, 100.0F, 0.0F, 0.0F));
     }
 
     public static boolean isDay() {

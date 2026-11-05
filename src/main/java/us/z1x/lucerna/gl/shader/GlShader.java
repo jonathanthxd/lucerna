@@ -2,14 +2,14 @@
 
 package us.z1x.lucerna.gl.shader;
 
-import us.z1x.lucerna.gl.GLDebug;
-import us.z1x.lucerna.gl.GlResource;
-import us.z1x.lucerna.gl.IrisRenderSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.KHRDebug;
+import us.z1x.lucerna.gl.GLDebug;
+import us.z1x.lucerna.gl.GlResource;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 
 import java.util.Locale;
 
@@ -31,10 +31,10 @@ public class GlShader extends GlResource {
 
         GLDebug.nameObject(KHRDebug.GL_SHADER, handle, name + "(" + type.name().toLowerCase(Locale.ROOT) + ")");
 
-        String log = IrisRenderSystem.getShaderInfoLog(handle);
+        String log = LucernaRenderSystem.getShaderInfoLog(handle);
 
         if (!log.isEmpty()) {
-            LOGGER.warn("Shader compilation log for " + name + ": " + log);
+            LOGGER.warn("Shader compilation log for {}: {}", name, log);
         }
 
         int result = GL20.glGetShaderi(handle, GL20C.GL_COMPILE_STATUS);

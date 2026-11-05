@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntFunction;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import us.z1x.lucerna.Iris;
+import us.z1x.lucerna.Lucerna;
 import us.z1x.lucerna.shaderpack.materialmap.BlockEntry;
 import us.z1x.lucerna.shaderpack.materialmap.BlockRenderType;
 import us.z1x.lucerna.shaderpack.materialmap.NamespacedId;
@@ -50,7 +50,6 @@ public class IdMap {
             blockRenderTypeMap = parseRenderTypeMap(blockProperties, "layer.", "block.properties");
         });
 
-
         if (blockPropertiesMap == null) {
             blockPropertiesMap = new Int2ObjectOpenHashMap<>();
             LegacyIdMap.addLegacyValues(blockPropertiesMap);
@@ -77,7 +76,7 @@ public class IdMap {
         try {
             properties.load(propertiesReader);
         } catch (IOException e) {
-            Iris.logger.error("Error loading " + name + " at " + shaderPath, e);
+            Lucerna.logger.error("Error loading {} at {}", name, shaderPath, e);
 
             return Optional.empty();
         }
@@ -89,11 +88,11 @@ public class IdMap {
         try {
             return new String(Files.readAllBytes(shaderPath.resolve(name)), StandardCharsets.ISO_8859_1);
         } catch (NoSuchFileException e) {
-            Iris.logger.debug("An " + name + " file was not found in the current shaderpack");
+            Lucerna.logger.debug("An {} file was not found in the current shaderpack", name);
 
             return null;
         } catch (IOException e) {
-            Iris.logger.error("An IOException occurred reading " + name + " from the current shaderpack", e);
+            Lucerna.logger.error("An IOException occurred reading {} from the current shaderpack", name, e);
 
             return null;
         }
@@ -124,13 +123,13 @@ public class IdMap {
             try {
                 intId = Integer.parseInt(key.substring(keyPrefix.length()));
             } catch (NumberFormatException e) {
-                Iris.logger.warn("Failed to parse line in " + fileName + ": invalid key " + key);
+                Lucerna.logger.warn("Failed to parse line in {}: invalid key {}", fileName, key);
                 return;
             }
 
             for (String part : value.split("\\s+")) {
                 if (part.contains("=")) {
-                    Iris.logger.warn("Failed to parse an ResourceLocation in " + fileName + " for the key " + key + ": state properties are currently not supported: " + part);
+                    Lucerna.logger.warn("Failed to parse an ResourceLocation in {} for the key {}: state properties are currently not supported: {}", fileName, key, part);
                     continue;
                 }
 
@@ -158,7 +157,7 @@ public class IdMap {
             try {
                 intId = Integer.parseInt(key.substring(keyPrefix.length()));
             } catch (NumberFormatException e) {
-                Iris.logger.warn("Failed to parse line in " + fileName + ": invalid key " + key);
+                Lucerna.logger.warn("Failed to parse line in {}: invalid key {}", fileName, key);
                 return;
             }
 
@@ -172,7 +171,7 @@ public class IdMap {
                 try {
                     entries.add(BlockEntry.parse(part));
                 } catch (Exception e) {
-                    Iris.logger.warn("Unexpected error while parsing an entry from " + fileName + " for the key " + key + ":", e);
+                    Lucerna.logger.warn("Unexpected error while parsing an entry from {} for the key {}:", fileName, key, e);
                 }
             }
 
@@ -199,7 +198,7 @@ public class IdMap {
             BlockRenderType renderType = BlockRenderType.fromString(keyWithoutPrefix).orElse(null);
 
             if (renderType == null) {
-                Iris.logger.warn("Failed to parse line in " + fileName + ": invalid block render type: " + key);
+                Lucerna.logger.warn("Failed to parse line in {}: invalid block render type: {}", fileName, key);
                 return;
             }
 

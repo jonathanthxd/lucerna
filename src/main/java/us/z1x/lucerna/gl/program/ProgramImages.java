@@ -1,12 +1,12 @@
 package us.z1x.lucerna.gl.program;
 
 import com.google.common.collect.ImmutableList;
-import us.z1x.lucerna.gl.IrisRenderSystem;
+import org.lwjgl.opengl.GL20;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 import us.z1x.lucerna.gl.image.ImageBinding;
 import us.z1x.lucerna.gl.image.ImageHolder;
 import us.z1x.lucerna.gl.image.ImageLimits;
 import us.z1x.lucerna.gl.texture.InternalTextureFormat;
-import org.lwjgl.opengl.GL20;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class ProgramImages {
     public void update() {
         if (initializer != null) {
             for (GlUniform1iCall call : initializer) {
-                IrisRenderSystem.uniform1i(call.getLocation(), call.getValue());
+                LucernaRenderSystem.uniform1i(call.getLocation(), call.getValue());
             }
 
             initializer = null;

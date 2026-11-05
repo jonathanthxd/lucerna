@@ -1,6 +1,6 @@
 package us.z1x.lucerna.pipeline.transform;
 
-import us.z1x.lucerna.gbuffer_overrides.matching.InputAvailability;
+import us.z1x.lucerna.gbufferoverrides.matching.InputAvailability;
 
 class AttributeParameters extends Parameters {
     public final boolean hasGeometry;

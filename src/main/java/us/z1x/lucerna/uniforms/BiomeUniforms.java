@@ -1,9 +1,9 @@
 package us.z1x.lucerna.uniforms;
 
-import us.z1x.lucerna.gl.uniform.UniformHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
+import us.z1x.lucerna.gl.uniform.UniformHolder;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -58,7 +58,7 @@ public class BiomeUniforms {
                     return 0;
                 }
 
-                return biome.isSnowy() ? 2 : biome.isRainy() ? 1 : 0;
+                return biome.isSnowy() ? 2 : (biome.isRainy() ? 1 : 0);
             })
             .uniform1f(PER_TICK, "rainfall", () -> {
                 Biome biome = getBiome();

@@ -5,13 +5,6 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.mixin.GameRendererAccessor;
-import us.z1x.lucerna.rendertarget.NativeImageBackedCustomTexture;
-import us.z1x.lucerna.rendertarget.NativeImageBackedNoiseTexture;
-import us.z1x.lucerna.shaderpack.PackDirectives;
-import us.z1x.lucerna.shaderpack.texture.CustomTextureData;
-import us.z1x.lucerna.shaderpack.texture.TextureStage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.platform.GlStateManager;
 import net.minecraft.client.render.texture.AbstractTexture;
@@ -22,6 +15,13 @@ import net.minecraft.resource.Identifier;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL12C;
 import org.lwjgl.system.MemoryUtil;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.mixin.GameRendererAccessor;
+import us.z1x.lucerna.rendertarget.NativeImageBackedCustomTexture;
+import us.z1x.lucerna.rendertarget.NativeImageBackedNoiseTexture;
+import us.z1x.lucerna.shaderpack.PackDirectives;
+import us.z1x.lucerna.shaderpack.texture.CustomTextureData;
+import us.z1x.lucerna.shaderpack.texture.TextureStage;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -49,8 +49,7 @@ public class CustomTextureManager {
                 try {
                     customTextureIds.put(samplerName, createCustomTexture(textureData));
                 } catch (IOException e) {
-                    Iris.logger.error("Unable to parse the image data for the custom texture on stage "
-                            + textureStage + ", sampler " + samplerName, e);
+                    Lucerna.logger.error("Unable to parse the image data for the custom texture on stage {}, sampler {}", textureStage, samplerName, e);
                 }
             });
 
@@ -61,7 +60,7 @@ public class CustomTextureManager {
             try {
                 return Optional.of(createCustomTexture(textureData));
             } catch (IOException e) {
-                Iris.logger.error("Unable to parse the image data for the custom noise texture", e);
+                Lucerna.logger.error("Unable to parse the image data for the custom noise texture", e);
 
                 return Optional.empty();
             }
@@ -115,7 +114,7 @@ public class CustomTextureManager {
     }
 
     private static int createRawTexture(CustomTextureData.RawData raw) {
-        int target = raw instanceof CustomTextureData.RawData1D ? GL11C.GL_TEXTURE_1D : raw instanceof CustomTextureData.RawData3D ? GL12C.GL_TEXTURE_3D : GL11C.GL_TEXTURE_2D;
+        int target = raw instanceof CustomTextureData.RawData1D ? GL11C.GL_TEXTURE_1D : (raw instanceof CustomTextureData.RawData3D ? GL12C.GL_TEXTURE_3D : GL11C.GL_TEXTURE_2D);
         int texture = GL11C.glGenTextures();
         int filter = raw.getFilteringData().shouldBlur() ? GL11C.GL_LINEAR : GL11C.GL_NEAREST;
         int wrap = raw.getFilteringData().shouldClamp() ? GL12C.GL_CLAMP_TO_EDGE : GL11C.GL_REPEAT;
@@ -156,10 +155,6 @@ public class CustomTextureManager {
         } else {
             GL11C.glBindTexture(target, texture);
         }
-    }
-
-    public EnumMap<TextureStage, Object2ObjectMap<String, IntSupplier>> getCustomTextureIdMap() {
-        return customTextureIdMap;
     }
 
     public Object2ObjectMap<String, IntSupplier> getCustomTextureIdMap(TextureStage stage) {

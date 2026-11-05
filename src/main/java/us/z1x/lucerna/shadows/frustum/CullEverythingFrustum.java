@@ -11,10 +11,6 @@ public class CullEverythingFrustum implements Culler, ViewportProvider, Frustum 
     public CullEverythingFrustum() {
     }
 
-    public boolean canDetermineInvisible(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
-        return false;
-    }
-
     @Override
     public void prepare(double cameraX, double cameraY, double cameraZ) {
     }

@@ -1,7 +1,7 @@
 package us.z1x.lucerna.shaderpack.option.menu;
 
 import com.google.common.collect.Lists;
-import us.z1x.lucerna.Iris;
+import us.z1x.lucerna.Lucerna;
 import us.z1x.lucerna.shaderpack.ShaderProperties;
 import us.z1x.lucerna.shaderpack.option.ProfileSet;
 import us.z1x.lucerna.shaderpack.option.ShaderPackOptions;
@@ -56,7 +56,7 @@ public class OptionMenuContainer {
                         }
                     }
                 } catch (IllegalArgumentException error) {
-                    Iris.logger.warn(error);
+                    Lucerna.logger.warn(error);
 
                     elementsToInsert.add(OptionMenuElement.EMPTY);
                 }

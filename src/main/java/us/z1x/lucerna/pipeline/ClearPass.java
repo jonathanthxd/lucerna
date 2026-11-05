@@ -1,8 +1,8 @@
 package us.z1x.lucerna.pipeline;
 
-import us.z1x.lucerna.gl.framebuffer.GlFramebuffer;
 import net.minecraft.client.render.platform.GlStateManager;
 import org.joml.Vector4f;
+import us.z1x.lucerna.gl.framebuffer.GlFramebuffer;
 
 import java.util.Objects;
 import java.util.function.IntSupplier;

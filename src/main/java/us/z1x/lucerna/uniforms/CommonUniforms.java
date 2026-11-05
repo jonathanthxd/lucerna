@@ -1,16 +1,5 @@
 package us.z1x.lucerna.uniforms;
 
-import us.z1x.lucerna.gl.state.StateUpdateNotifiers;
-import us.z1x.lucerna.gl.uniform.DynamicUniformHolder;
-import us.z1x.lucerna.gl.uniform.UniformHolder;
-import us.z1x.lucerna.layer.GbufferPrograms;
-import us.z1x.lucerna.shaderpack.IdMap;
-import us.z1x.lucerna.shaderpack.PackDirectives;
-import us.z1x.lucerna.texture.TextureInfoCache;
-import us.z1x.lucerna.texture.TextureInfoCache.TextureInfo;
-import us.z1x.lucerna.texture.TextureTracker;
-import us.z1x.lucerna.uniforms.transforms.SmoothedFloat;
-import us.z1x.lucerna.uniforms.transforms.SmoothedVec2f;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
@@ -31,6 +20,19 @@ import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector4i;
+import us.z1x.lucerna.gl.state.StateUpdateNotifiers;
+import us.z1x.lucerna.gl.uniform.DynamicUniformHolder;
+import us.z1x.lucerna.gl.uniform.UniformHolder;
+import us.z1x.lucerna.layer.GbufferPrograms;
+import us.z1x.lucerna.shaderpack.IdMap;
+import us.z1x.lucerna.shaderpack.PackDirectives;
+import us.z1x.lucerna.texture.TextureInfoCache;
+import us.z1x.lucerna.texture.TextureInfoCache.TextureInfo;
+import us.z1x.lucerna.texture.TextureTracker;
+import us.z1x.lucerna.uniforms.transforms.SmoothedFloat;
+import us.z1x.lucerna.uniforms.transforms.SmoothedVec2f;
+
+import java.util.function.Predicate;
 
 import static us.z1x.lucerna.gl.uniform.UniformUpdateFrequency.ONCE;
 import static us.z1x.lucerna.gl.uniform.UniformUpdateFrequency.PER_FRAME;
@@ -40,7 +42,14 @@ public final class CommonUniforms {
     private static final Minecraft client = Minecraft.getInstance();
     private static final Vector2i ZERO_VECTOR_2i = new Vector2i();
     private static final Vector4i ZERO_VECTOR_4i = new Vector4i(0, 0, 0, 0);
-    private static final Vector3d ZERO_VECTOR_3d = new Vector3d();
+    private static final Vector3d ZERO_VECTOR_3D = new Vector3d();
+    private static final Vector2i ATLAS_SIZE = new Vector2i();
+    private static final Vector2i TEXTURE_SIZE = new Vector2i();
+    private static final Vector4i BLEND_FUNC = new Vector4i();
+    private static final Vector2i EYE_BRIGHTNESS = new Vector2i();
+    private static final Vector2i EYE_BRIGHTNESS_SMOOTH = new Vector2i();
+    private static final Vector3d SKY_COLOR = new Vector3d();
+    private static final BlockPos.Mutable EYE_BLOCK_POS = new BlockPos.Mutable();
 
     private CommonUniforms() {
     }
@@ -68,7 +77,7 @@ public final class CommonUniforms {
             AbstractTexture texture = TextureTracker.INSTANCE.getTexture(glId);
             if (texture instanceof TextureAtlas) {
                 TextureInfo info = TextureInfoCache.INSTANCE.getInfo(glId);
-                return new Vector2i(info.getWidth(), info.getHeight());
+                return ATLAS_SIZE.set(info.getWidth(), info.getHeight());
             }
 
             return ZERO_VECTOR_2i;
@@ -78,15 +87,14 @@ public final class CommonUniforms {
             int glId = GlStateManager.TEXTURES[0].texture;
 
             TextureInfo info = TextureInfoCache.INSTANCE.getInfo(glId);
-            return new Vector2i(info.getWidth(), info.getHeight());
-
+            return TEXTURE_SIZE.set(info.getWidth(), info.getHeight());
         }, StateUpdateNotifiers.bindTextureNotifier);
 
         uniforms.uniform4i("blendFunc", () -> {
             GlStateManager.Blend blend = GlStateManager.BLEND;
 
             if (blend.state.enabled) {
-                return new Vector4i(blend.sfactorRGB, blend.dfactorRGB, blend.sfactorAlpha, blend.dfactorAlpha);
+                return BLEND_FUNC.set(blend.sfactorRGB, blend.dfactorRGB, blend.sfactorAlpha, blend.dfactorAlpha);
             } else {
                 return ZERO_VECTOR_4i;
             }
@@ -106,7 +114,7 @@ public final class CommonUniforms {
         BiomeUniforms.addBiomeUniforms(uniforms);
         new CelestialUniforms(directives.getSunPathRotation()).addCelestialUniforms(uniforms);
         IdMapUniforms.addIdMapUniforms(updateNotifier, uniforms, idMap, directives.isOldHandLight());
-        IrisExclusiveUniforms.addIrisExclusiveUniforms(uniforms);
+        LucernaExclusiveUniforms.addLucernaExclusiveUniforms(uniforms);
         MatrixUniforms.addMatrixUniforms(uniforms, directives);
         CommonUniforms.generalCommonUniforms(uniforms, updateNotifier, directives);
     }
@@ -125,6 +133,14 @@ public final class CommonUniforms {
             // 1.8.9 has no darkness effect
             .uniform1f(PER_FRAME, "darknessFactor", () -> 0.0F)
             .uniform1f(PER_FRAME, "darknessLightFactor", () -> 0.0F)
+            // 1.8.9 has no end flash
+            .uniform1f(ONCE, "endFlashIntensity", () -> 0.0F)
+            .uniform1b(PER_TICK, "is_sneaking", () -> cameraEntityIs(Entity::isSneaking))
+            .uniform1b(PER_TICK, "is_sprinting", () -> cameraEntityIs(Entity::isSprinting))
+            .uniform1b(PER_TICK, "is_invisible", () -> cameraEntityIs(Entity::isInvisible))
+            .uniform1b(PER_TICK, "is_burning", () -> cameraEntityIs(Entity::isOnFire))
+            .uniform1b(PER_TICK, "is_on_ground", () -> cameraEntityIs(entity -> entity.onGround))
+            .uniform1b(PER_TICK, "is_hurt", () -> cameraEntityIs(entity -> entity instanceof LivingEntity living && living.damagedTimer > 0))
             // optifine's default alpha test reference
             .uniform1f(ONCE, "alphaTestRef", () -> 0.1F)
             // 1.8.9 fog is spherical, modern packs read the shape
@@ -134,7 +150,7 @@ public final class CommonUniforms {
             .uniform2i(PER_FRAME, "eyeBrightness", CommonUniforms::getEyeBrightness)
             .uniform2i(PER_FRAME, "eyeBrightnessSmooth", () -> {
                 Vector2f smoothed = eyeBrightnessSmooth.get();
-                return new Vector2i((int) smoothed.x(),(int) smoothed.y());
+                return EYE_BRIGHTNESS_SMOOTH.set((int) smoothed.x(), (int) smoothed.y());
             })
             .uniform1f(PER_TICK, "rainStrength", CommonUniforms::getRainStrength)
             .uniform1f(PER_TICK, "wetness", new SmoothedFloat(directives.getWetnessHalfLife(), directives.getDrynessHalfLife(), CommonUniforms::getRainStrength, updateNotifier))
@@ -142,13 +158,19 @@ public final class CommonUniforms {
             .uniform3d(PER_FRAME, "fogColor", CapturedRenderingState.INSTANCE::getFogColor);
     }
 
+    private static boolean cameraEntityIs(Predicate<Entity> condition) {
+        Entity camera = client.getCamera();
+
+        return camera != null && condition.test(camera);
+    }
+
     private static Vector3d getSkyColor() {
         if (client.world == null || client.getCamera() == null) {
-            return ZERO_VECTOR_3d;
+            return ZERO_VECTOR_3D;
         }
 
         Vec3d color = client.world.getSkyColor(client.getCamera(), CapturedRenderingState.INSTANCE.getTickDelta());
-        return new Vector3d(color.x, color.y, color.z);
+        return SKY_COLOR.set(color.x, color.y, color.z);
     }
 
     static float getBlindness() {
@@ -184,12 +206,12 @@ public final class CommonUniforms {
             return ZERO_VECTOR_2i;
         }
 
-        BlockPos eyeBlockPos = new BlockPos(camera.x, camera.y + camera.getEyeHeight(), camera.z);
+        BlockPos eyeBlockPos = EYE_BLOCK_POS.set(MathHelper.floor(camera.x), MathHelper.floor(camera.y + camera.getEyeHeight()), MathHelper.floor(camera.z));
 
         int blockLight = client.world.getBrightness(LightType.BLOCK, eyeBlockPos);
         int skyLight = client.world.getBrightness(LightType.SKY, eyeBlockPos);
 
-        return new Vector2i(blockLight * 16, skyLight * 16);
+        return EYE_BRIGHTNESS.set(blockLight * 16, skyLight * 16);
     }
 
     private static float getNightVision() {

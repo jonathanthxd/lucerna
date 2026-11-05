@@ -1,8 +1,15 @@
 package us.z1x.lucerna.gl.program;
 
 import com.google.common.collect.ImmutableList;
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.gl.IrisRenderSystem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.world.ClientWorld;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.ARBShaderImageLoadStore;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL20C;
+import org.lwjgl.opengl.GL30C;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.gl.LucernaRenderSystem;
 import us.z1x.lucerna.gl.state.ValueUpdateNotifier;
 import us.z1x.lucerna.gl.uniform.DynamicLocationalUniformHolder;
 import us.z1x.lucerna.gl.uniform.Uniform;
@@ -10,12 +17,6 @@ import us.z1x.lucerna.gl.uniform.UniformHolder;
 import us.z1x.lucerna.gl.uniform.UniformType;
 import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
 import us.z1x.lucerna.uniforms.SystemTimeUniforms;
-import net.minecraft.client.Minecraft;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.ARBShaderImageLoadStore;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL20C;
-import org.lwjgl.opengl.GL30C;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -54,7 +55,9 @@ public class ProgramUniforms {
     }
 
     private static long getCurrentTick() {
-        return Objects.requireNonNull(Minecraft.getInstance().world).getTime();
+        ClientWorld world = Minecraft.getInstance().world;
+
+        return world == null ? 0 : world.getTime();
     }
 
     public void update() {
@@ -72,6 +75,7 @@ public class ProgramUniforms {
             updateStage(perTick);
             updateStage(perFrame);
             lastTick = getCurrentTick();
+            lastFrame = SystemTimeUniforms.COUNTER.getAsInt();
 
             once = null;
             return;
@@ -165,7 +169,7 @@ public class ProgramUniforms {
 
         @Override
         public OptionalInt location(String name, UniformType type) {
-            int id = IrisRenderSystem.getUniformLocation(program, name);
+            int id = LucernaRenderSystem.getUniformLocation(program, name);
 
             if (id == -1) {
                 return OptionalInt.empty();
@@ -175,7 +179,7 @@ public class ProgramUniforms {
                 locations.put(id, name);
                 uniformNames.put(name, type);
             } else {
-                Iris.logger.warn("[" + this.name + "] Duplicate uniform: " + type.toString().toLowerCase() + " " + name);
+                Lucerna.logger.warn("[{}] Duplicate uniform: {} {}", this.name, type.toString().toLowerCase(), name);
 
                 return OptionalInt.empty();
             }
@@ -190,7 +194,7 @@ public class ProgramUniforms {
             IntBuffer typeBuf = BufferUtils.createIntBuffer(1);
 
             for (int index = 0; index < activeUniforms; index++) {
-                String name = IrisRenderSystem.getActiveUniform(program, index, 128, sizeBuf, typeBuf);
+                String name = LucernaRenderSystem.getActiveUniform(program, index, 128, sizeBuf, typeBuf);
 
                 if (name.isEmpty()) {
                     continue;
@@ -222,16 +226,16 @@ public class ProgramUniforms {
                                 expectedName = "(unsupported type: " + getTypeName(type) + ")";
                             }
 
-                            Iris.logger.error("[" + this.name + "] Wrong uniform type for externally-managed uniform " + name + ": " + externalProvided + " is provided but the program expects " + expectedName + ".");
+                            Lucerna.logger.error("[{}] Wrong uniform type for externally-managed uniform {}: {} is provided but the program expects {}.", this.name, name, externalProvided, expectedName);
                         }
 
                         continue;
                     }
 
                     if (size == 1) {
-                        Iris.logger.warn("[" + this.name + "] Unsupported uniform: " + typeName + " " + name);
+                        Lucerna.logger.warn("[{}] Unsupported uniform: {} {}", this.name, typeName, name);
                     } else {
-                        Iris.logger.warn("[" + this.name + "] Unsupported uniform: " + name + " of size " + size + " and type " + typeName);
+                        Lucerna.logger.warn("[{}] Unsupported uniform: {} of size {} and type {}", this.name, name, size, typeName);
                     }
 
                     continue;
@@ -246,7 +250,7 @@ public class ProgramUniforms {
                         expectedName = "(unsupported type: " + getTypeName(type) + ")";
                     }
 
-                    Iris.logger.error("[" + this.name + "] Wrong uniform type for " + name + ": Iris is providing " + provided + " but the program expects " + expectedName + ". Disabling that uniform.");
+                    Lucerna.logger.error("[{}] Wrong uniform type for {}: Lucerna is providing {} but the program expects {}. Disabling that uniform.", this.name, name, provided, expectedName);
 
                     once.remove(name);
                     perTick.remove(name);

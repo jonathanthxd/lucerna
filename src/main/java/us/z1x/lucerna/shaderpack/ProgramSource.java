@@ -13,7 +13,7 @@ public class ProgramSource {
     private final ProgramSet parent;
 
     private ProgramSource(String name, String vertexSource, String geometrySource, String fragmentSource,
-                         ProgramDirectives directives, ProgramSet parent) {
+                          ProgramDirectives directives, ProgramSet parent) {
         this.name = name;
         this.vertexSource = vertexSource;
         this.geometrySource = geometrySource;

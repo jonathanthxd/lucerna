@@ -14,3 +14,7 @@ accessible field net/minecraft/client/render/platform/GlStateManager FOG Lnet/mi
 accessible field net/minecraft/client/render/platform/GlStateManager TEXTURES [Lnet/minecraft/client/render/platform/GlStateManager$Texture;
 accessible field net/minecraft/client/render/platform/GlStateManager texture I
 accessible field net/minecraft/client/render/platform/GlStateManager$GlState enabled Z
+accessible field net/minecraft/client/render/texture/TextureAtlas stitchedSprites Ljava/util/Map;
+accessible field net/minecraft/client/render/texture/TextureAtlas maxMipLevel I
+accessible method net/minecraft/client/render/texture/TextureAtlas getResourceId (Lnet/minecraft/resource/Identifier;I)Lnet/minecraft/resource/Identifier;
+accessible field net/minecraft/client/render/texture/SimpleTexture location Lnet/minecraft/resource/Identifier;

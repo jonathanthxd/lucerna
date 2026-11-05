@@ -4,14 +4,6 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import us.z1x.lucerna.Iris;
-import us.z1x.lucerna.gl.program.Program;
-import us.z1x.lucerna.pipeline.HandRenderer;
-import us.z1x.lucerna.pipeline.WorldRenderingPhase;
-import us.z1x.lucerna.pipeline.WorldRenderingPipeline;
-import us.z1x.lucerna.uniforms.CapturedRenderingState;
-import us.z1x.lucerna.uniforms.SystemTimeUniforms;
-import net.irisshaders.iris.api.v0.IrisApi;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.ParticleManager;
 import net.minecraft.client.render.Culler;
@@ -34,6 +26,13 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import us.z1x.lucerna.Lucerna;
+import us.z1x.lucerna.gl.program.Program;
+import us.z1x.lucerna.pipeline.HandRenderer;
+import us.z1x.lucerna.pipeline.WorldRenderingPhase;
+import us.z1x.lucerna.pipeline.WorldRenderingPipeline;
+import us.z1x.lucerna.uniforms.CapturedRenderingState;
+import us.z1x.lucerna.uniforms.SystemTimeUniforms;
 
 import java.nio.FloatBuffer;
 
@@ -92,6 +91,11 @@ public abstract class MixinGameRenderer {
     @Shadow
     public abstract void disableLightMap();
 
+    @Inject(method = "render(FJ)V", at = @At("HEAD"))
+    private void lucerna$tickBackgroundReload(float tickDelta, long renderTimeLimit, CallbackInfo ci) {
+        Lucerna.tickBackgroundReload();
+    }
+
     @Inject(method = "setupClearColor", at = @At("RETURN"))
     private void lucerna$captureFogColor(float tickDelta, CallbackInfo ci) {
         CapturedRenderingState.INSTANCE.setFogColor(fogRed, fogGreen, fogBlue);
@@ -110,8 +114,8 @@ public abstract class MixinGameRenderer {
 
         Program.unbind();
 
-        lucerna$pipeline = Iris.getPipelineManager().preparePipeline(Iris.getCurrentDimension());
-        lucerna$deferParticlesAndWeather = IrisApi.getInstance().isShaderPackInUse() && !lucerna$pipeline.shouldRenderParticlesBeforeDeferred();
+        lucerna$pipeline = Lucerna.getPipelineManager().preparePipeline(Lucerna.getCurrentDimension());
+        lucerna$deferParticlesAndWeather = Lucerna.isShaderPipelineActive() && !lucerna$pipeline.shouldRenderParticlesBeforeDeferred();
 
         lucerna$pipeline.beginLevelRendering();
     }
@@ -125,7 +129,7 @@ public abstract class MixinGameRenderer {
     @WrapOperation(method = LUCERNA_RENDER_WORLD_PASS, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;renderClouds(Lnet/minecraft/client/render/world/WorldRenderer;FI)V"))
     private void lucerna$renderClouds(GameRenderer gameRenderer, WorldRenderer worldRenderer, float tickDelta, int anaglyphRenderPass, Operation<Void> original) {
         // shader packs get the clouds after the translucent terrain, see lucerna$renderLateWorld
-        if (!IrisApi.getInstance().isShaderPackInUse()) {
+        if (!Lucerna.isShaderPipelineActive()) {
             original.call(gameRenderer, worldRenderer, tickDelta, anaglyphRenderPass);
         }
     }
@@ -160,7 +164,7 @@ public abstract class MixinGameRenderer {
 
     @Inject(method = LUCERNA_RENDER_WORLD_PASS, at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiler/Profiler;swap(Ljava/lang/String;)V", args = "ldc=translucent"))
     private void lucerna$beginTranslucents(int anaglyphRenderPass, float tickDelta, long renderTimeLimit, CallbackInfo ci) {
-        if (!IrisApi.getInstance().isShaderPackInUse()) {
+        if (!Lucerna.isShaderPipelineActive()) {
             return;
         }
 
@@ -174,7 +178,7 @@ public abstract class MixinGameRenderer {
         GlStateManager.enableBlend();
         GlStateManager.depthMask(false);
 
-        minecraft.profiler.swap("iris_pre_translucent");
+        minecraft.profiler.swap("lucerna_pre_translucent");
         lucerna$pipeline.beginTranslucents();
 
         // the deferred passes unbind every texture unit
@@ -184,7 +188,7 @@ public abstract class MixinGameRenderer {
     // iris packs expect particles, clouds and weather after the deferred passes, but 1.8.9 draws the clouds before the terrain
     @Inject(method = LUCERNA_RENDER_WORLD_PASS, at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiler/Profiler;swap(Ljava/lang/String;)V", args = "ldc=hand"))
     private void lucerna$renderLateWorld(int anaglyphRenderPass, float tickDelta, long renderTimeLimit, CallbackInfo ci) {
-        if (!IrisApi.getInstance().isShaderPackInUse()) {
+        if (!Lucerna.isShaderPipelineActive()) {
             return;
         }
 
@@ -220,23 +224,23 @@ public abstract class MixinGameRenderer {
     // vanilla skips the sky below 4 chunks, but packs expect the sky pass at any render distance
     @ModifyExpressionValue(method = LUCERNA_RENDER_WORLD_PASS, at = @At(value = "FIELD", target = "Lnet/minecraft/client/options/GameOptions;viewDistance:I"))
     private int lucerna$alwaysRenderSky(int viewDistance) {
-        return IrisApi.getInstance().isShaderPackInUse() ? Math.max(viewDistance, 4) : viewDistance;
+        return Lucerna.isShaderPipelineActive() ? Math.max(viewDistance, 4) : viewDistance;
     }
 
     // the hand goes into the gbuffers before the translucent terrain, so skip the vanilla hand pass
     @ModifyExpressionValue(method = LUCERNA_RENDER_WORLD_PASS, at = @At(value = "FIELD", target = "Lnet/minecraft/client/render/GameRenderer;newCamPitch:Z"))
     private boolean lucerna$skipVanillaHand(boolean renderHand) {
-        return renderHand && !IrisApi.getInstance().isShaderPackInUse();
+        return renderHand && !Lucerna.isShaderPipelineActive();
     }
 
     @Inject(method = LUCERNA_RENDER_WORLD_PASS, at = @At("RETURN"))
     private void lucerna$endLevelRender(int anaglyphRenderPass, float tickDelta, long renderTimeLimit, CallbackInfo ci) {
-        minecraft.profiler.swap("iris_final");
+        minecraft.profiler.swap("lucerna_final");
         lucerna$pipeline.finalizeLevelRendering();
         lucerna$pipeline = null;
         Program.unbind();
 
-        if (IrisApi.getInstance().isShaderPackInUse()) {
+        if (Lucerna.isShaderPipelineActive()) {
             lucerna$renderScreenEffects(tickDelta);
         }
     }
@@ -245,7 +249,7 @@ public abstract class MixinGameRenderer {
     private void lucerna$renderScreenEffects(float tickDelta) {
         Entity camera = minecraft.getCamera();
 
-        if (minecraft.options.perspective != 0 || camera instanceof LivingEntity && ((LivingEntity) camera).isSleeping()) {
+        if (minecraft.options.perspective != 0 || camera instanceof LivingEntity living && living.isSleeping()) {
             return;
         }
 

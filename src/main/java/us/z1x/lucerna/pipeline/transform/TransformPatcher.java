@@ -14,10 +14,10 @@ import io.github.douira.glsl_transformer.cst.token_filter.ChannelFilter;
 import io.github.douira.glsl_transformer.cst.token_filter.TokenChannel;
 import io.github.douira.glsl_transformer.cst.token_filter.TokenFilter;
 import io.github.douira.glsl_transformer.util.LRUCache;
-import us.z1x.lucerna.gbuffer_overrides.matching.InputAvailability;
-import us.z1x.lucerna.pipeline.PatchedShaderPrinter;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Token;
+import us.z1x.lucerna.gbufferoverrides.matching.InputAvailability;
+import us.z1x.lucerna.pipeline.PatchedShaderPrinter;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -133,7 +133,7 @@ public class TransformPatcher {
                 }
                 violation.ifPresent(id -> {
                     throw new SemanticException(
-                            "Detected a potential reference to unstable and internal Iris shader interfaces (iris_ and irisMain). This isn't currently supported. Violation: "
+                            "Detected a potential reference to unstable and internal Lucerna shader interfaces (iris_ and irisMain). This isn't currently supported. Violation: "
                                     + id.getName() + ". See debugging.md for more information.");
                 });
 
@@ -144,8 +144,8 @@ public class TransformPatcher {
                         case ATTRIBUTES:
                             AttributeTransformer.transform(transformer, tree, root, (AttributeParameters) parameters);
                             break;
-                        case SODIUM_TERRAIN:
-                            SodiumTerrainTransformer.transform(transformer, tree, root, parameters);
+                        case CELERITAS_TERRAIN:
+                            CeleritasTerrainTransformer.transform(transformer, tree, root, parameters);
                             break;
                         case INSTANCED_ENTITY:
                             InstancedEntityTransformer.transform(transformer, tree, root, parameters);
@@ -166,7 +166,7 @@ public class TransformPatcher {
 
     private static final Pattern VERSION_PATTERN = Pattern.compile("^.*#version\\s+(\\d+)", Pattern.DOTALL);
 
-    private static Map<PatchShaderType, String> transform(String vertex, String geometry, String fragment, Parameters parameters) {
+    private static synchronized Map<PatchShaderType, String> transform(String vertex, String geometry, String fragment, Parameters parameters) {
         if (vertex == null && geometry == null && fragment == null) {
             return null;
         }
@@ -204,8 +204,8 @@ public class TransformPatcher {
         return transform(vertex, geometry, fragment, withRenames(new AttributeParameters(Patch.ATTRIBUTES, geometry != null, inputs), textureRenames));
     }
 
-    public static Map<PatchShaderType, String> patchSodiumTerrain(String vertex, String geometry, String fragment, Map<String, String> textureRenames) {
-        return transform(vertex, geometry, fragment, withRenames(new Parameters(Patch.SODIUM_TERRAIN), textureRenames));
+    public static Map<PatchShaderType, String> patchCeleritasTerrain(String vertex, String geometry, String fragment, Map<String, String> textureRenames) {
+        return transform(vertex, geometry, fragment, withRenames(new Parameters(Patch.CELERITAS_TERRAIN), textureRenames));
     }
 
     public static Map<PatchShaderType, String> patchInstancedEntity(String vertex, String fragment, Map<String, String> textureRenames) {

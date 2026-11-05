@@ -1,6 +1,6 @@
 package us.z1x.lucerna.shaderpack.option.values;
 
-import us.z1x.lucerna.Iris;
+import us.z1x.lucerna.Lucerna;
 import us.z1x.lucerna.shaderpack.OptionalBoolean;
 import us.z1x.lucerna.shaderpack.option.OptionSet;
 
@@ -13,7 +13,7 @@ public interface OptionValues {
     default boolean getBooleanValueOrDefault(String name) {
         return getBooleanValue(name).orElseGet(() -> {
             if (!getOptionSet().getBooleanOptions().containsKey(name)) {
-                Iris.logger.warn("Tried to get boolean value for unknown option: " + name + ", defaulting to true!");
+                Lucerna.logger.warn("Tried to get boolean value for unknown option: {}, defaulting to true!", name);
                 return true;
             }
             return getOptionSet().getBooleanOptions().get(name).getOption().getDefaultValue();
@@ -27,6 +27,6 @@ public interface OptionValues {
     int getOptionsChanged();
 
     MutableOptionValues mutableCopy();
-    ImmutableOptionValues toImmutable();
+
     OptionSet getOptionSet();
 }
