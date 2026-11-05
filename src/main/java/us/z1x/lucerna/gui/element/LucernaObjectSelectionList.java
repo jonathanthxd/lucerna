@@ -16,7 +16,7 @@ import java.util.List;
 public class LucernaObjectSelectionList<E extends LucernaObjectSelectionList.Entry> extends ListWidget {
     private final List<E> entries = new ArrayList<>();
     private E selected;
-    private E focused;
+    private final ListInteraction<E> interaction = new ListInteraction<>();
     private boolean renderBackground = true;
 
     public LucernaObjectSelectionList(Minecraft client, int width, int height, int top, int bottom, int left, int right, int itemHeight) {
@@ -55,7 +55,9 @@ public class LucernaObjectSelectionList<E extends LucernaObjectSelectionList.Ent
     protected void clearEntries() {
         this.entries.clear();
         this.selected = null;
-        this.focused = null;
+        this.interaction.invalidate();
+        this.setScrollAmount(0);
+        this.setScrolling(true);
     }
 
     public void setScrollAmount(float amount) {
@@ -96,16 +98,10 @@ public class LucernaObjectSelectionList<E extends LucernaObjectSelectionList.Ent
         if (this.isMouseInList(mouseY)) {
             int index = this.getEntryAt(mouseX, mouseY);
 
-            if (index >= 0 && index < this.entries.size()) {
-                // a click can open a submenu, which rebuilds the entries
-                E entry = this.entries.get(index);
-
-                if (entry.mouseClicked(mouseX, mouseY, button)) {
-                    this.focused = entry;
-                    this.setScrolling(false);
-
-                    return true;
-                }
+            if (interaction.click(entries, index, entry -> entry.mouseClicked(mouseX, mouseY, button))) {
+                // A submenu may have replaced the rows during the callback.
+                this.setScrolling(!interaction.hasFocus());
+                return true;
             }
         }
 
@@ -113,9 +109,7 @@ public class LucernaObjectSelectionList<E extends LucernaObjectSelectionList.Ent
     }
 
     public void mouseReleased(int mouseX, int mouseY, int button) {
-        if (this.focused != null) {
-            this.focused.mouseReleased(mouseX, mouseY, button);
-        }
+        interaction.release(entry -> entry.mouseReleased(mouseX, mouseY, button));
 
         this.setScrolling(true);
     }

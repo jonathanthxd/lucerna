@@ -66,3 +66,11 @@ tasks.processResources {
         into("META-INF")
     }
 }
+
+// Dependency-free regression suite; also runnable with tools/test-regressions.sh.
+val regressionChecks by tasks.registering(JavaExec::class) {
+    dependsOn(tasks.testClasses)
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass = "us.z1x.lucerna.gui.element.ListInteractionRegression"
+}
+tasks.check { dependsOn(regressionChecks) }
