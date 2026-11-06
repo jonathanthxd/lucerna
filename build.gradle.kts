@@ -104,3 +104,9 @@ val samplerRegistrationChecks = tasks.register<JavaExec>("samplerRegistrationChe
     args(layout.buildDirectory.file("reports/sampler-cases.json").get().asFile.absolutePath)
 }
 tasks.check { dependsOn(samplerRegistrationChecks) }
+
+// Optional real-driver test: EGL/Mesa on Linux; no native dependencies are shipped in the mod.
+val samplerGlChecks = tasks.register<Exec>("samplerGlChecks") {
+    dependsOn(samplerRegistrationChecks)
+    commandLine("python3", "tools/test-sampler-gl.py", layout.buildDirectory.file("reports/sampler-cases.json").get().asFile.absolutePath)
+}

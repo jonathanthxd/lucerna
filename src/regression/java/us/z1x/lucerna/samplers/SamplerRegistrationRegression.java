@@ -103,6 +103,41 @@ public final class SamplerRegistrationRegression {
         check(SamplerFixture.effectiveLimit(16,8,32)==8);
         check(SamplerFixture.effectiveLimit(64,192,32)==32);
         check(SamplerFixture.effectiveLimit(16,192,32)==16);
+        // Active uniforms captured by compiling/linking the user's original Mellow 3.5 ZIP.
+        // Replay their allocation on both an 8-unit legacy budget and a 16-unit budget.
+        int mellowCollisions = 0;
+        var resource = SamplerRegistrationRegression.class.getResourceAsStream("/mellow-3.5-active-samplers.json");
+        if (resource == null) throw new AssertionError("Missing original Mellow sampler fixture");
+        var probe = new com.google.gson.JsonParser().parse(new java.io.InputStreamReader(resource, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+        check(probe.getAsJsonArray("failures").size()==0);
+        for (var entry : probe.getAsJsonArray("programs")) {
+            var program = entry.getAsJsonObject();
+            boolean dh = program.get("dh").getAsBoolean();
+            System.setProperty("lucerna.experimentalFarTerrain", Boolean.toString(dh));
+            Set<String> names = new LinkedHashSet<>();
+            program.getAsJsonObject("samplers").entrySet().forEach(value -> names.add(value.getKey()));
+            String[] uniforms = names.toArray(String[]::new);
+            if (dh && (names.contains("dhDepthTex0") || names.contains("dhDepthTex1"))) {
+                var broken = new SamplerFixture(16, Set.of(1,2), uniforms);
+                FarTerrainUniforms.addSamplers(broken.builder);
+                fails(() -> broken.builder.addDefaultSampler(() -> 100,"colortex0","gcolor"), "Texture unit 0 is already used");
+                mellowCollisions++;
+            }
+            for (int capacity : new int[]{8,16}) {
+                var fixture = new SamplerFixture(capacity, Set.of(1,2), uniforms);
+                LucernaSamplers.addRenderTargetSamplers(fixture.builder,16,index->()->100+index,List.of(),true);
+                LucernaSamplers.addNoiseSampler(fixture.builder,()->200);
+                LucernaSamplers.addCompositeSamplers(fixture.builder,()->201,()->202,()->203);
+                Map<String,Integer> assignments = fixture.assignments();
+                check(assignments.keySet().equals(names));
+                check(assignments.values().stream().allMatch(unit->unit<capacity && unit!=1 && unit!=2));
+                check(new HashSet<>(assignments.values()).size()==assignments.size());
+                fixture.builder.build();
+                if(capacity==16)nativeCase("mellow-"+program.get("name").getAsString()+"-dh-"+dh,assignments);
+            }
+        }
+        check(mellowCollisions==4);
+        System.out.println("Original Mellow active-signature replay: 34 programs x 2 capacities; tfl.1 collisions="+mellowCollisions);
         if(args.length>0) { Path report=Path.of(args[0]); Files.createDirectories(report.getParent()); Files.writeString(report,new Gson().toJson(nativeCases)); }
         System.out.println("Sampler allocation/registration checks passed: " + checks + "; old tfl.1 collision reproduced; native cases=" + nativeCases.size());
     }

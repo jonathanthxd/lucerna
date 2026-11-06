@@ -155,11 +155,14 @@ public class LucernaSamplers {
     }
 
     public static void addCompositeSamplers(SamplerHolder samplers, RenderTargets renderTargets) {
-        samplers.addDynamicSampler(renderTargets::getDepthTexture,
-                "gdepthtex", "depthtex0");
-        samplers.addDynamicSampler(renderTargets.getDepthTextureNoTranslucents()::getTextureId,
-                "depthtex1");
-        samplers.addDynamicSampler(renderTargets.getDepthTextureNoHand()::getTextureId,
-                "depthtex2");
+        addCompositeSamplers(samplers, renderTargets::getDepthTexture,
+            renderTargets.getDepthTextureNoTranslucents()::getTextureId,
+            renderTargets.getDepthTextureNoHand()::getTextureId);
+    }
+
+    static void addCompositeSamplers(SamplerHolder samplers, IntSupplier depth0, IntSupplier depth1, IntSupplier depth2) {
+        samplers.addDynamicSampler(depth0, "gdepthtex", "depthtex0");
+        samplers.addDynamicSampler(depth1, "depthtex1");
+        samplers.addDynamicSampler(depth2, "depthtex2");
     }
 }
