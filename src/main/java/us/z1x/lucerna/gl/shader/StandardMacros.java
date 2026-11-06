@@ -37,6 +37,11 @@ public class StandardMacros {
 
         define(standardDefines, "MC_VERSION", getMcVersion());
         define(standardDefines, "IS_IRIS");
+        if (us.z1x.lucerna.api.farterrain.FarTerrainApi.enabled()) {
+            define(standardDefines, "DISTANT_HORIZONS");
+            String[] materials = {"UNKNOWN", "LEAVES", "STONE", "WOOD", "METAL", "DIRT", "LAVA", "DEEPSLATE", "SNOW", "SAND", "TERRACOTTA", "NETHER_STONE", "WATER", "GRASS", "AIR", "ILLUMINATED"};
+            for (int i = 0; i < materials.length; i++) define(standardDefines, "DH_BLOCK_" + materials[i], Integer.toString(i));
+        }
         define(standardDefines, "MC_GL_VERSION", getGlVersion(GL20C.GL_VERSION));
         define(standardDefines, "MC_GLSL_VERSION", getGlVersion(GL20C.GL_SHADING_LANGUAGE_VERSION));
         define(standardDefines, getOsString());

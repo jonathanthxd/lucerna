@@ -261,15 +261,16 @@ public class ShaderPack {
 
     public CustomTextureData readTexture(Path root, String value) throws IOException {
         CustomTextureData customTextureData;
-        String[] parts = value.split(" ");
+        String[] parts = value.trim().split("\\s+");
+        if (parts[0].isEmpty()) throw new IOException("Empty custom texture declaration");
         String path = parts[0];
 
         if (path.contains(":")) {
-            String[] location = path.split(":");
-
-            if (location.length > 2) {
-                Lucerna.logger.warn("Resource location {} contained more than two parts?", path);
+            String[] location = path.split(":", -1);
+            if (location.length != 2 || location[0].isEmpty() || location[1].isEmpty()) {
+                throw new IOException("Invalid custom texture resource location: " + path);
             }
+
 
             if (location[0].equals("minecraft") && (location[1].equals("dynamic/lightmap_1") || location[1].equals("dynamic/light_map_1"))) {
                 customTextureData = new CustomTextureData.LightmapMarker();
@@ -291,6 +292,7 @@ public class ShaderPack {
             if (Files.exists(mcMetaResolvedPath)) {
                 try {
                     JsonObject meta = loadMcMeta(mcMetaResolvedPath);
+                    if (meta == null) throw new IOException("Empty texture metadata: " + mcMetaPath);
                     if (meta.get("texture") != null) {
                         if (meta.get("texture").getAsJsonObject().get("blur") != null) {
                             blur = meta.get("texture").getAsJsonObject().get("blur").getAsBoolean();
@@ -299,7 +301,7 @@ public class ShaderPack {
                             clamp = meta.get("texture").getAsJsonObject().get("clamp").getAsBoolean();
                         }
                     }
-                } catch (IOException e) {
+                } catch (IOException | JsonParseException | IllegalStateException | UnsupportedOperationException e) {
                     Lucerna.logger.error("Unable to read the custom texture mcmeta at {}, ignoring: {}", mcMetaPath, e);
                 }
             }
@@ -318,6 +320,21 @@ public class ShaderPack {
 
     // <path> <type> <internal format> <size x> [size y] [size z] <pixel format> <pixel type>
     private static CustomTextureData readRawTexture(String[] parts, byte[] content, TextureFilteringData filtering) throws IOException {
+        if (parts.length < 6) throw new IOException("Incomplete raw texture declaration: " + String.join(" ", parts));
+        int expected = switch (parts[1]) {
+            case "TEXTURE_1D" -> 6;
+            case "TEXTURE_2D", "TEXTURE_RECTANGLE" -> 7;
+            case "TEXTURE_3D" -> 8;
+            default -> throw new IOException("Unknown texture type " + parts[1]);
+        };
+        if (parts.length != expected) throw new IOException("Raw texture " + parts[0] + " expects " + expected + " fields, got " + parts.length);
+        for (int i = 3; i < expected - 2; i++) {
+            try {
+                if (Integer.parseInt(parts[i]) <= 0) throw new NumberFormatException("Non-positive dimension");
+            } catch (NumberFormatException error) {
+                throw new IOException("Invalid raw texture dimension for " + parts[0] + ": " + parts[i], error);
+            }
+        }
         InternalTextureFormat internalFormat = InternalTextureFormat.fromString(parts[2]).orElseThrow(() -> new IOException("Unknown internal format " + parts[2]));
         PixelFormat pixelFormat = PixelFormat.fromString(parts[parts.length - 2]).orElseThrow(() -> new IOException("Unknown pixel format " + parts[parts.length - 2]));
         PixelType pixelType = PixelType.fromString(parts[parts.length - 1]).orElseThrow(() -> new IOException("Unknown pixel type " + parts[parts.length - 1]));

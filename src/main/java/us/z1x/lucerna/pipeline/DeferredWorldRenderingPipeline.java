@@ -1,5 +1,15 @@
 package us.z1x.lucerna.pipeline;
 
+import us.z1x.lucerna.api.farterrain.FarTerrainApi;
+import us.z1x.lucerna.api.farterrain.FarTerrainFrame;
+import us.z1x.lucerna.api.farterrain.FarTerrainMesh;
+import us.z1x.lucerna.compat.farterrain.FarTerrainState;
+import us.z1x.lucerna.compat.farterrain.FarTerrainGlScope;
+import us.z1x.lucerna.gl.uniform.UniformUpdateFrequency;
+import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.BufferUtils;
+import java.nio.FloatBuffer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -90,6 +100,10 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
     private static final Vector4f EMPTY_CLEAR_COLOR = new Vector4f(1.0F);
 
     private final RenderTargets renderTargets;
+    private final ProgramSet farTerrainPrograms;
+    private final FarTerrainState farTerrain;
+    private Pass farTerrainPass, farWaterPass;
+
     private final DepthTexture mainDepth;
 
     @Nullable
@@ -210,6 +224,10 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
 
         this.renderTargets = new RenderTargets(mainTarget.width, mainTarget.height, mainDepth.getTextureId(), 0,
             DepthBufferFormat.DEPTH24, programs.getPackDirectives().getRenderTargetDirectives().getRenderTargetSettings(), programs.getPackDirectives());
+
+        this.farTerrainPrograms = programs;
+        this.farTerrain = FarTerrainApi.enabled()
+            ? new FarTerrainState(renderTargets) : null;
 
         this.sunPathRotation = programs.getPackDirectives().getSunPathRotation();
 
@@ -609,6 +627,98 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
         return id != null ? id : PROGRAM_IDS[index];
     }
 
+    public FarTerrainState getFarTerrainState() { return farTerrain; }
+
+    public boolean hasFarTerrainProgram(FarTerrainApi.Phase phase) {
+        return farTerrain != null && !farTerrain.failed && farTerrainPrograms.get(
+            phase == FarTerrainApi.Phase.TERRAIN ? ProgramId.DhTerrain : ProgramId.DhWater).isPresent();
+    }
+
+    public FarTerrainApi.Result renderFarTerrain(
+            FarTerrainApi.Phase phase,
+            FarTerrainFrame frame,
+            List<FarTerrainMesh> meshes) {
+        var unavailable = FarTerrainApi.Result.UNAVAILABLE;
+        if (!hasFarTerrainProgram(phase)) return unavailable;
+        boolean water = phase == FarTerrainApi.Phase.WATER;
+        if (!isRenderingWorld || isRenderingShadow || isRenderingFullScreenPass || isPostChain || celeritasTerrainRendering
+                || water == isBeforeTranslucent || (water ? farTerrain.waterDrawn || !farTerrain.terrainDrawn : farTerrain.terrainDrawn)) {
+            return FarTerrainApi.Result.WRONG_PHASE;
+        }
+        Pass previousPass = current;
+        try (var scope = new FarTerrainGlScope()) {
+            beginPass(null);
+            try {
+                farTerrain.setFrame(frame);
+                Pass pass = water ? farWaterPass : farTerrainPass;
+                if (pass == null) {
+                    ProgramId id = water ? ProgramId.DhWater : ProgramId.DhTerrain;
+                    ProgramSource source = farTerrainPrograms.get(id).orElseThrow();
+                    if (source.getDirectives().getViewportScale() != 1.0f
+                            || !source.getDirectives().getExplicitFlips().isEmpty()
+                            || !source.getDirectives().getMipmappedBuffers().isEmpty()) {
+                        throw new IllegalArgumentException("DH viewport scaling, explicit flips and mipmap directives need a newer integration contract");
+                    }
+                    var patched = TransformPatcher.patchFarTerrain(source.getVertexSource().orElseThrow(),
+                        source.getGeometrySource().orElse(null), source.getFragmentSource().orElseThrow(), gbufferTextureRenames);
+                    ProgramBuilder builder = ProgramBuilder.begin(source.getName(), patched.get(PatchShaderType.VERTEX),
+                        patched.get(PatchShaderType.GEOMETRY), patched.get(PatchShaderType.FRAGMENT), LucernaSamplers.WORLD_RESERVED_TEXTURE_UNITS);
+                    builder.uniformMatrix(UniformUpdateFrequency.CUSTOM, "lucernaDhProjectionInverse", () -> farTerrain.inverse);
+                    builder.uniformMatrix(UniformUpdateFrequency.CUSTOM, "lucernaNativeProjection", CapturedRenderingState.INSTANCE::getGbufferProjection);
+                    builder.uniform2i(UniformUpdateFrequency.CUSTOM, "lucernaViewport", () -> new org.joml.Vector2i(renderTargets.getCurrentWidth(), renderTargets.getCurrentHeight()));
+                    builder.addDynamicSampler(renderTargets::getDepthTexture, "lucernaNativeDepth");
+                    try {
+                        pass = createPassInner(builder, source.getParent().getPack().getIdMap(), source.getDirectives(),
+                            packDirectives, new InputAvailability(false, true, false), false, id, true);
+                    } catch (RuntimeException | Error failure) { builder.discard(); throw failure; }
+                    if (water) farWaterPass = pass; else farTerrainPass = pass;
+                    if (pass.program.getActiveImages() != 0) throw new IllegalArgumentException("DH image load/store is not supported by API v1");
+                }
+                farTerrain.drawing = true; // never sample the depth texture attached to the active framebuffer
+                if (water) farTerrain.waterDrawn = true; else farTerrain.terrainDrawn = true;
+                pass.use();
+                FloatBuffer projection = BufferUtils.createFloatBuffer(16).put(frame.projection()); projection.flip();
+                FloatBuffer model = BufferUtils.createFloatBuffer(16).put(frame.modelView()); model.flip();
+                GL11.glMatrixMode(GL11.GL_PROJECTION); GL11.glLoadMatrixf(projection);
+                GL11.glEnable(GL11.GL_DEPTH_TEST);
+                GL11.glDepthFunc(GL11.GL_LEQUAL);
+                GL11.glDepthMask(true);
+                GL11.glDisable(GL11.GL_SCISSOR_TEST);
+                GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+                GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
+                GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
+                for (var mesh : meshes) {
+                    GL11.glMatrixMode(GL11.GL_MODELVIEW);
+                    GL11.glLoadMatrixf(model);
+                    GL11.glTranslatef(mesh.x(), mesh.y(), mesh.z());
+                    GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, mesh.vertexBuffer());
+                    GL11.glVertexPointer(3, GL11.GL_FLOAT, 52, 0L);
+                    GL11.glColorPointer(4, GL11.GL_FLOAT, 52, 12L);
+                    GL11.glNormalPointer(GL11.GL_FLOAT, 52, 28L);
+                    GL13.glClientActiveTexture(GL13.GL_TEXTURE1);
+                    GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+                    GL11.glTexCoordPointer(2, GL11.GL_FLOAT, 52, 40L);
+                    GL13.glClientActiveTexture(GL13.GL_TEXTURE3);
+                    GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+                    GL11.glTexCoordPointer(1, GL11.GL_FLOAT, 52, 48L);
+                    GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, mesh.vertexCount());
+                }
+                pass.stopUsing();
+                if (!water) farTerrain.copyOpaqueDepth();
+                return FarTerrainApi.Result.RENDERED;
+            } finally {
+                if (water && farWaterPass != null) farWaterPass.stopUsing();
+                if (!water && farTerrainPass != null) farTerrainPass.stopUsing();
+                farTerrain.drawing = false;
+                beginPass(previousPass);
+            }
+        } catch (RuntimeException failure) {
+            farTerrain.failed = true;
+            Lucerna.logger.error("Disabling experimental DH integration after {} failure; reload the shader pack to retry", phase, failure);
+            return FarTerrainApi.Result.FAILED;
+        }
+    }
+
     private Pass createPass(ProgramSource source, InputAvailability availability, boolean shadow, ProgramId id) {
         Map<PatchShaderType, String> transformed = TransformPatcher.patchAttributes(
             source.getVertexSource().orElseThrow(NullPointerException::new),
@@ -624,11 +734,13 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
         ProgramBuilder builder = ProgramBuilder.begin(source.getName(), vertex, geometry, fragment,
             LucernaSamplers.WORLD_RESERVED_TEXTURE_UNITS);
 
-        return createPassInner(builder, source.getParent().getPack().getIdMap(), source.getDirectives(), source.getParent().getPackDirectives(), availability, shadow, id);
+        try {
+            return createPassInner(builder, source.getParent().getPack().getIdMap(), source.getDirectives(), source.getParent().getPackDirectives(), availability, shadow, id, false);
+        } catch (RuntimeException | Error failure) { builder.discard(); throw failure; }
     }
 
     private Pass createPassInner(ProgramBuilder builder, IdMap map, ProgramDirectives programDirectives,
-                                 PackDirectives packDirectives, InputAvailability availability, boolean shadow, ProgramId id) {
+                                 PackDirectives packDirectives, InputAvailability availability, boolean shadow, ProgramId id, boolean far) {
 
         CommonUniforms.addCommonUniforms(builder, map, packDirectives, updateNotifier);
         customUniforms.assignTo(builder);
@@ -682,9 +794,11 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
             framebufferAfterTranslucents = framebufferBeforeTranslucents;
         } else {
             framebufferBeforeTranslucents =
-                renderTargets.createGbufferFramebuffer(flippedAfterPrepare, programDirectives.getDrawBuffers());
+                far ? farTerrain.createFramebuffer(renderTargets, flippedAfterPrepare, programDirectives.getDrawBuffers())
+                    : renderTargets.createGbufferFramebuffer(flippedAfterPrepare, programDirectives.getDrawBuffers());
             framebufferAfterTranslucents =
-                renderTargets.createGbufferFramebuffer(flippedAfterTranslucent, programDirectives.getDrawBuffers());
+                far ? farTerrain.createFramebuffer(renderTargets, flippedAfterTranslucent, programDirectives.getDrawBuffers())
+                    : renderTargets.createGbufferFramebuffer(flippedAfterTranslucent, programDirectives.getDrawBuffers());
         }
 
         builder.bindAttributeLocation(11, "mc_Entity");
@@ -692,7 +806,7 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
         builder.bindAttributeLocation(13, "at_tangent");
         builder.bindAttributeLocation(14, "at_midBlock");
 
-        AlphaTestOverride alphaTestOverride = programDirectives.getAlphaTestOverride().orElse(null);
+        AlphaTestOverride alphaTestOverride = programDirectives.getAlphaTestOverride().orElse(far ? AlphaTestOverride.OFF : null);
 
         List<BufferBlendOverride> bufferOverrides = new ArrayList<>();
 
@@ -843,6 +957,9 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
         AlphaTestOverride.restore();
 
         destroyPasses(table);
+        if (farTerrainPass != null) farTerrainPass.destroy();
+        if (farWaterPass != null) farWaterPass.destroy();
+        if (farTerrain != null) farTerrain.destroy();
 
         setupRenderer.destroy();
         beginRenderer.destroy();
@@ -1156,6 +1273,11 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
         LucernaRenderSystem.invalidateFramebufferBindings();
 
         prepareRenderTargets();
+        if (farTerrain != null) {
+            try (var scope = new FarTerrainGlScope()) {
+                farTerrain.beginFrame(renderTargets);
+            }
+        }
 
         setPhase(WorldRenderingPhase.SKY);
 

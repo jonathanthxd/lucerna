@@ -14,7 +14,10 @@ public class OptionMenuElementScreen {
     private final Optional<Integer> columnCount;
 
     public OptionMenuElementScreen(OptionMenuContainer container, ShaderProperties shaderProperties, ShaderPackOptions shaderPackOptions, List<String> elementStrings, Optional<Integer> columnCount) {
-        this.columnCount = columnCount;
+        this.columnCount = columnCount.filter(value -> value >= 1 && value <= 16);
+        if (columnCount.isPresent() && this.columnCount.isEmpty()) {
+            Lucerna.logger.warn("Invalid shader option column count {}; using automatic layout (supported: 1..16)", columnCount.get());
+        }
 
         for (String elementString : elementStrings) {
             if ("*".equals(elementString)) {

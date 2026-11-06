@@ -30,22 +30,23 @@ public class LucernaSamplers {
 
     public static void addRenderTargetSamplers(SamplerHolder samplers, Supplier<ImmutableSet<Integer>> flipped,
                                                RenderTargets renderTargets, boolean isFullscreenPass) {
+        addRenderTargetSamplers(samplers, renderTargets.getRenderTargetCount(), index -> () -> {
+            RenderTarget target = renderTargets.get(index);
+            return flipped.get().contains(index) ? target.getAltTexture() : target.getMainTexture();
+        }, renderTargets.getCustomImages(), isFullscreenPass);
+    }
+
+    // Separates registration from GPU-owned render targets; the same path can be checked without a GL context.
+    static void addRenderTargetSamplers(SamplerHolder samplers, int targetCount,
+                                       java.util.function.IntFunction<IntSupplier> samplerForIndex,
+                                       Iterable<CustomImage> customImages, boolean isFullscreenPass) {
         // colortex0 to colortex3 can only be sampled in fullscreen passes
         int startIndex = isFullscreenPass ? 0 : 4;
 
-        for (int i = startIndex; i < renderTargets.getRenderTargetCount(); i++) {
+        for (int i = startIndex; i < targetCount; i++) {
             final int index = i;
 
-            IntSupplier sampler = () -> {
-                ImmutableSet<Integer> flippedBuffers = flipped.get();
-                RenderTarget target = renderTargets.get(index);
-
-                if (flippedBuffers.contains(index)) {
-                    return target.getAltTexture();
-                } else {
-                    return target.getMainTexture();
-                }
-            };
+            IntSupplier sampler = samplerForIndex.apply(index);
 
             final String name = "colortex" + i;
 
@@ -63,7 +64,11 @@ public class LucernaSamplers {
             }
         }
 
-        for (CustomImage image : renderTargets.getCustomImages()) {
+        // Composite's default (unit 0) must precede every dynamic sampler, including DH.
+        // Keep this ordering shared by deferred/composite/final and their compute variants.
+        us.z1x.lucerna.compat.farterrain.FarTerrainUniforms.addSamplers(samplers);
+
+        for (CustomImage image : customImages) {
             if (image.getInfo().samplerName() != null) {
                 samplers.addDynamicSampler(image::getTexture, image.getInfo().samplerName());
             }
@@ -150,11 +155,14 @@ public class LucernaSamplers {
     }
 
     public static void addCompositeSamplers(SamplerHolder samplers, RenderTargets renderTargets) {
-        samplers.addDynamicSampler(renderTargets::getDepthTexture,
-                "gdepthtex", "depthtex0");
-        samplers.addDynamicSampler(renderTargets.getDepthTextureNoTranslucents()::getTextureId,
-                "depthtex1");
-        samplers.addDynamicSampler(renderTargets.getDepthTextureNoHand()::getTextureId,
-                "depthtex2");
+        addCompositeSamplers(samplers, renderTargets::getDepthTexture,
+            renderTargets.getDepthTextureNoTranslucents()::getTextureId,
+            renderTargets.getDepthTextureNoHand()::getTextureId);
+    }
+
+    static void addCompositeSamplers(SamplerHolder samplers, IntSupplier depth0, IntSupplier depth1, IntSupplier depth2) {
+        samplers.addDynamicSampler(depth0, "gdepthtex", "depthtex0");
+        samplers.addDynamicSampler(depth1, "depthtex1");
+        samplers.addDynamicSampler(depth2, "depthtex2");
     }
 }

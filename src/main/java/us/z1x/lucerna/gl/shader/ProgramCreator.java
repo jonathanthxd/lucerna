@@ -23,33 +23,38 @@ public class ProgramCreator {
     public static int create(String name, GlShader... shaders) {
         int program = GL20.glCreateProgram();
 
-        bindAttributes(program);
+        try {
+            bindAttributes(program);
 
-        for (GlShader shader : shaders) {
-            GL20.glAttachShader(program, shader.getHandle());
+            for (GlShader shader : shaders) {
+                GL20.glAttachShader(program, shader.getHandle());
+            }
+
+            GL20.glLinkProgram(program);
+
+            GLDebug.nameObject(KHRDebug.GL_PROGRAM, program, name);
+
+            // https://www.khronos.org/opengl/wiki/Shader_Compilation#Cleanup
+            for (GlShader shader : shaders) {
+                LucernaRenderSystem.detachShader(program, shader.getHandle());
+            }
+
+            String log = LucernaRenderSystem.getProgramInfoLog(program);
+
+            if (!log.isEmpty()) {
+                LOGGER.warn("Program link log for {}: {}", name, log);
+            }
+
+            int result = GL20.glGetProgrami(program, GL20C.GL_LINK_STATUS);
+
+            if (result != GL20C.GL_TRUE) {
+                throw new RuntimeException("Shader program linking failed for " + name + ": " + log);
+            }
+
+            return program;
+        } catch (RuntimeException | Error failure) {
+            GL20.glDeleteProgram(program);
+            throw failure;
         }
-
-        GL20.glLinkProgram(program);
-
-        GLDebug.nameObject(KHRDebug.GL_PROGRAM, program, name);
-
-        // https://www.khronos.org/opengl/wiki/Shader_Compilation#Cleanup
-        for (GlShader shader : shaders) {
-            LucernaRenderSystem.detachShader(program, shader.getHandle());
-        }
-
-        String log = LucernaRenderSystem.getProgramInfoLog(program);
-
-        if (!log.isEmpty()) {
-            LOGGER.warn("Program link log for {}: {}", name, log);
-        }
-
-        int result = GL20.glGetProgrami(program, GL20C.GL_LINK_STATUS);
-
-        if (result != GL20C.GL_TRUE) {
-            throw new RuntimeException("Shader program linking failed, see log for details");
-        }
-
-        return program;
     }
 }

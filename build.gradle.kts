@@ -66,3 +66,47 @@ tasks.processResources {
         into("META-INF")
     }
 }
+
+// These are executable dependency-free checks, not JUnit test classes.
+// A dedicated source set makes `check` run them without misconfiguring Gradle's Test task.
+val regression = sourceSets.create("regression") {
+    compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
+    runtimeClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
+}
+val regressionChecks = tasks.register<JavaExec>("regressionChecks") {
+    dependsOn(tasks.named(regression.classesTaskName))
+    classpath = regression.runtimeClasspath
+    mainClass = "us.z1x.lucerna.gui.element.ListInteractionRegression"
+}
+val farTerrainContractChecks = tasks.register<JavaExec>("farTerrainContractChecks") {
+    dependsOn(tasks.named(regression.classesTaskName))
+    classpath = regression.runtimeClasspath
+    mainClass = "us.z1x.lucerna.api.farterrain.FarTerrainContractRegression"
+}
+tasks.check { dependsOn(regressionChecks, farTerrainContractChecks) }
+
+val shaderSourceChecks = tasks.register<JavaExec>("shaderSourceChecks") {
+    dependsOn(tasks.named(regression.classesTaskName))
+    classpath = regression.runtimeClasspath
+    mainClass = "us.z1x.lucerna.api.farterrain.FarShaderRegression"
+}
+tasks.check { dependsOn(shaderSourceChecks) }
+
+val shaderCleanupChecks = tasks.register<Exec>("shaderCleanupChecks") {
+    commandLine(if (System.getProperty("os.name").lowercase().contains("windows")) "python" else "python3", "tools/test-gl-cleanup.py")
+}
+tasks.check { dependsOn(shaderCleanupChecks) }
+
+val samplerRegistrationChecks = tasks.register<JavaExec>("samplerRegistrationChecks") {
+    dependsOn(tasks.named(regression.classesTaskName))
+    classpath = regression.runtimeClasspath
+    mainClass = "us.z1x.lucerna.samplers.SamplerRegistrationRegression"
+    args(layout.buildDirectory.file("reports/sampler-cases.json").get().asFile.absolutePath)
+}
+tasks.check { dependsOn(samplerRegistrationChecks) }
+
+// Optional real-driver test: EGL/Mesa on Linux; no native dependencies are shipped in the mod.
+val samplerGlChecks = tasks.register<Exec>("samplerGlChecks") {
+    dependsOn(samplerRegistrationChecks)
+    commandLine("python3", "tools/test-sampler-gl.py", layout.buildDirectory.file("reports/sampler-cases.json").get().asFile.absolutePath)
+}

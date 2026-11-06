@@ -1,0 +1,271 @@
+{
+  "zip_sha256": "b46c5460cae9afe4d5b68bf6ac398661c01278d1c50b99070931f1477ecf8899",
+  "probe": "raw pack GLSL + GCC preprocessing + Mesa EGL, not Lucerna transforms/Minecraft",
+  "programs": [
+    {
+      "name": "composite",
+      "dh": false,
+      "samplers": {
+        "colortex8": "0x8b5e",
+        "depthtex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite1",
+      "dh": false,
+      "samplers": {
+        "colortex8": "0x8b5e",
+        "colortex9": "0x8b5e",
+        "depthtex1": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite10",
+      "dh": false,
+      "samplers": {
+        "colortex2": "0x8b5e",
+        "colortex3": "0x8b5e",
+        "gaux2": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite11",
+      "dh": false,
+      "samplers": {
+        "colortex0": "0x8b5e",
+        "colortex2": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite12",
+      "dh": false,
+      "samplers": {
+        "colortex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite13",
+      "dh": false,
+      "samplers": {
+        "colortex0": "0x8b5e",
+        "depthtex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite2",
+      "dh": false,
+      "samplers": {
+        "colortex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite3",
+      "dh": false,
+      "samplers": {
+        "colortex1": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite4",
+      "dh": false,
+      "samplers": {
+        "colortex1": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite5",
+      "dh": false,
+      "samplers": {
+        "colortex1": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite6",
+      "dh": false,
+      "samplers": {
+        "colortex1": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite7",
+      "dh": false,
+      "samplers": {
+        "colortex0": "0x8b5e",
+        "colortex1": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite8",
+      "dh": false,
+      "samplers": {
+        "colortex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite9",
+      "dh": false,
+      "samplers": {
+        "colortex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "deferred",
+      "dh": false,
+      "samplers": {
+        "depthtex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "deferred1",
+      "dh": false,
+      "samplers": {
+        "colortex0": "0x8b5e",
+        "gaux4": "0x8b5e",
+        "depthtex0": "0x8b5e",
+        "noisetex": "0x8b5e"
+      }
+    },
+    {
+      "name": "final",
+      "dh": false,
+      "samplers": {
+        "colortex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite",
+      "dh": true,
+      "samplers": {
+        "colortex8": "0x8b5e",
+        "depthtex0": "0x8b5e",
+        "dhDepthTex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite1",
+      "dh": true,
+      "samplers": {
+        "colortex8": "0x8b5e",
+        "colortex9": "0x8b5e",
+        "depthtex1": "0x8b5e",
+        "dhDepthTex1": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite10",
+      "dh": true,
+      "samplers": {
+        "colortex2": "0x8b5e",
+        "colortex3": "0x8b5e",
+        "gaux2": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite11",
+      "dh": true,
+      "samplers": {
+        "colortex0": "0x8b5e",
+        "colortex2": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite12",
+      "dh": true,
+      "samplers": {
+        "colortex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite13",
+      "dh": true,
+      "samplers": {
+        "colortex0": "0x8b5e",
+        "depthtex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite2",
+      "dh": true,
+      "samplers": {
+        "colortex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite3",
+      "dh": true,
+      "samplers": {
+        "colortex1": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite4",
+      "dh": true,
+      "samplers": {
+        "colortex1": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite5",
+      "dh": true,
+      "samplers": {
+        "colortex1": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite6",
+      "dh": true,
+      "samplers": {
+        "colortex1": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite7",
+      "dh": true,
+      "samplers": {
+        "colortex0": "0x8b5e",
+        "colortex1": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite8",
+      "dh": true,
+      "samplers": {
+        "colortex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "composite9",
+      "dh": true,
+      "samplers": {
+        "colortex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "deferred",
+      "dh": true,
+      "samplers": {
+        "depthtex0": "0x8b5e",
+        "dhDepthTex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "deferred1",
+      "dh": true,
+      "samplers": {
+        "colortex0": "0x8b5e",
+        "gaux4": "0x8b5e",
+        "depthtex0": "0x8b5e",
+        "noisetex": "0x8b5e",
+        "dhDepthTex0": "0x8b5e"
+      }
+    },
+    {
+      "name": "final",
+      "dh": true,
+      "samplers": {
+        "colortex0": "0x8b5e"
+      }
+    }
+  ],
+  "failures": []
+}

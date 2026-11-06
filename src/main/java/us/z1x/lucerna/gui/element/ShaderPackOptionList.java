@@ -58,6 +58,7 @@ public class ShaderPackOptionList extends LucernaObjectSelectionList<ShaderPackO
     }
 
     public void addWidgets(int columns, List<AbstractElementWidget<?>> elements) {
+        columns = MenuLayout.columns(columns, 2);
         this.elementWidgets.addAll(elements);
 
         List<AbstractElementWidget<?>> row = new ArrayList<>();
@@ -192,6 +193,7 @@ public class ShaderPackOptionList extends LucernaObjectSelectionList<ShaderPackO
         private final List<AbstractElementWidget<?>> widgets;
         private final ShaderPackScreen screen;
 
+        private AbstractElementWidget<?> pressedWidget;
         private int cachedWidth;
         private int cachedPosX;
 
@@ -230,12 +232,18 @@ public class ShaderPackOptionList extends LucernaObjectSelectionList<ShaderPackO
 
         @Override
         public boolean mouseClicked(int mouseX, int mouseY, int button) {
-            return this.widgets.get(getHoveredWidget(mouseX)).mouseClicked(mouseX, mouseY, button);
+            if (cachedWidth <= 0 || widgets.isEmpty()) return false;
+            AbstractElementWidget<?> widget = widgets.get(getHoveredWidget(mouseX));
+            if (!widget.mouseClicked(mouseX, mouseY, button)) return false;
+            pressedWidget = widget;
+            return true;
         }
 
         @Override
         public boolean mouseReleased(int mouseX, int mouseY, int button) {
-            return this.widgets.get(getHoveredWidget(mouseX)).mouseReleased(mouseX, mouseY, button);
+            AbstractElementWidget<?> widget = pressedWidget;
+            pressedWidget = null;
+            return widget != null && widget.mouseReleased(mouseX, mouseY, button);
         }
     }
 }
