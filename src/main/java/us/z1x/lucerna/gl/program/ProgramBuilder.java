@@ -35,7 +35,7 @@ public class ProgramBuilder extends ProgramUniforms.Builder implements SamplerHo
         int pooled = ProgramPool.INSTANCE.take(vertexSource, geometrySource, fragmentSource);
 
         if (pooled != -1) {
-            return new ProgramBuilder(name, pooled, reservedTextureUnits);
+            return finishBegin(name, pooled, reservedTextureUnits);
         }
 
         GlShader vertex = null;
@@ -48,7 +48,7 @@ public class ProgramBuilder extends ProgramUniforms.Builder implements SamplerHo
             int programId = geometry != null
                 ? ProgramCreator.create(name, vertex, geometry, fragment)
                 : ProgramCreator.create(name, vertex, fragment);
-            return new ProgramBuilder(name, programId, reservedTextureUnits);
+            return finishBegin(name, programId, reservedTextureUnits);
         } finally {
             if (vertex != null) vertex.destroy();
             if (geometry != null) geometry.destroy();
@@ -62,9 +62,18 @@ public class ProgramBuilder extends ProgramUniforms.Builder implements SamplerHo
         }
         GlShader compute = buildShader(ShaderType.COMPUTE, name + ".csh", source);
         try {
-            return new ProgramBuilder(name, ProgramCreator.create(name, compute), reservedTextureUnits);
+            return finishBegin(name, ProgramCreator.create(name, compute), reservedTextureUnits);
         } finally {
             compute.destroy();
+        }
+    }
+
+    private static ProgramBuilder finishBegin(String name, int program, ImmutableSet<Integer> reservedTextureUnits) {
+        try {
+            return new ProgramBuilder(name, program, reservedTextureUnits);
+        } catch (RuntimeException | Error failure) {
+            org.lwjgl.opengl.GL20.glDeleteProgram(program);
+            throw failure;
         }
     }
 

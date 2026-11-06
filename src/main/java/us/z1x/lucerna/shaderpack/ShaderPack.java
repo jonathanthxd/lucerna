@@ -271,9 +271,6 @@ public class ShaderPack {
                 throw new IOException("Invalid custom texture resource location: " + path);
             }
 
-            if (location.length > 2) {
-                Lucerna.logger.warn("Resource location {} contained more than two parts?", path);
-            }
 
             if (location[0].equals("minecraft") && (location[1].equals("dynamic/lightmap_1") || location[1].equals("dynamic/light_map_1"))) {
                 customTextureData = new CustomTextureData.LightmapMarker();

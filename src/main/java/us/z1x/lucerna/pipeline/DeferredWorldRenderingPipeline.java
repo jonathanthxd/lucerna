@@ -654,6 +654,11 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
                 if (pass == null) {
                     ProgramId id = water ? ProgramId.DhWater : ProgramId.DhTerrain;
                     ProgramSource source = farTerrainPrograms.get(id).orElseThrow();
+                    if (source.getDirectives().getViewportScale() != 1.0f
+                            || !source.getDirectives().getExplicitFlips().isEmpty()
+                            || !source.getDirectives().getMipmappedBuffers().isEmpty()) {
+                        throw new IllegalArgumentException("DH viewport scaling, explicit flips and mipmap directives need a newer integration contract");
+                    }
                     var patched = TransformPatcher.patchFarTerrain(source.getVertexSource().orElseThrow(),
                         source.getGeometrySource().orElse(null), source.getFragmentSource().orElseThrow(), gbufferTextureRenames);
                     ProgramBuilder builder = ProgramBuilder.begin(source.getName(), patched.get(PatchShaderType.VERTEX),
@@ -729,7 +734,9 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
         ProgramBuilder builder = ProgramBuilder.begin(source.getName(), vertex, geometry, fragment,
             LucernaSamplers.WORLD_RESERVED_TEXTURE_UNITS);
 
-        return createPassInner(builder, source.getParent().getPack().getIdMap(), source.getDirectives(), source.getParent().getPackDirectives(), availability, shadow, id, false);
+        try {
+            return createPassInner(builder, source.getParent().getPack().getIdMap(), source.getDirectives(), source.getParent().getPackDirectives(), availability, shadow, id, false);
+        } catch (RuntimeException | Error failure) { builder.discard(); throw failure; }
     }
 
     private Pass createPassInner(ProgramBuilder builder, IdMap map, ProgramDirectives programDirectives,
@@ -799,7 +806,7 @@ public class DeferredWorldRenderingPipeline implements WorldRenderingPipeline, R
         builder.bindAttributeLocation(13, "at_tangent");
         builder.bindAttributeLocation(14, "at_midBlock");
 
-        AlphaTestOverride alphaTestOverride = programDirectives.getAlphaTestOverride().orElse(null);
+        AlphaTestOverride alphaTestOverride = programDirectives.getAlphaTestOverride().orElse(far ? AlphaTestOverride.OFF : null);
 
         List<BufferBlendOverride> bufferOverrides = new ArrayList<>();
 

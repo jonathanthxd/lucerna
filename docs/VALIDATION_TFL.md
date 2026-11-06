@@ -2,6 +2,12 @@
 
 ## Evidencia disponible
 
+CI verificado en [42134211333](https://github.com/jonathanthxd/lucerna/actions/runs/42134211333),
+commit `3d1bfe908444d17c432171a01e3897422d4ef40f`: **BUILD SUCCESSFUL**, JDK 25,
+remapJar, access widener y las cuatro suites. Hubo **2.088 assertions**:
+2.035 interacción/layout + 22 contrato CPU + 19 loader/AST/texturas + 12 limpieza
+GL simulada. Las revisiones posteriores deben validarse de nuevo en su propio CI.
+
 - `bash tools/test-regressions.sh`: 2.035 comprobaciones de interacción/layout
   y 22 de contrato CPU, ejecutadas con el compilador incluido en Java 21.
 - El CI con JDK 25 compiló el código y ejecutó esas mismas suites. La primera

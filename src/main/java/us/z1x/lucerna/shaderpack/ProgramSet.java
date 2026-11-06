@@ -87,8 +87,9 @@ public class ProgramSet {
         }
 
         boolean farTerrain = us.z1x.lucerna.api.farterrain.FarTerrainApi.enabled();
-        this.dhTerrain = farTerrain ? readProgramSource(directory, sourceProvider, "dh_terrain", this, shaderProperties) : null;
-        this.dhWater = farTerrain ? readProgramSource(directory, sourceProvider, "dh_water", this, shaderProperties) : null;
+        this.dhTerrain = farTerrain ? readProgramSource(directory, sourceProvider, "dh_terrain", this, shaderProperties, BlendModeOverride.OFF) : null;
+        this.dhWater = farTerrain ? readProgramSource(directory, sourceProvider, "dh_water", this, shaderProperties,
+            new BlendModeOverride(new us.z1x.lucerna.gl.blending.BlendMode(770, 771, 1, 771))) : null;
         this.gbuffersBasic = readProgramSource(directory, sourceProvider, "gbuffers_basic", this, shaderProperties);
         this.gbuffersLine = readProgramSource(directory, sourceProvider, "gbuffers_line", this, shaderProperties);
         this.gbuffersBeaconBeam = readProgramSource(directory, sourceProvider, "gbuffers_beaconbeam", this, shaderProperties);

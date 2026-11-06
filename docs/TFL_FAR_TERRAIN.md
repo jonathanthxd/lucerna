@@ -177,7 +177,7 @@ anterior. No borrar mundos, opciones de shaders ni cachés del usuario.
 - Sin dh_shadow, terreno texturizado DH, tessellation ni formato VBO empaquetado DH.
 - Se rechazan programas DH con image load/store; no se certifican SSBOs, atomics,
   gl_FragDepth, viewport/tamaños de salida personalizados o usos de atributos fuera
-  del contrato. No se puede afirmar compatibilidad completa con todos los packs DH.
+  del contrato. Se rechazan explícitamente scale/flip/mipmap por pasada DH. No se puede afirmar compatibilidad completa con todos los packs DH.
 - Las primitivas transparentes deben llegar ordenadas desde TFL Core.
 - El fallback de errores preserva el renderer y registra el problema, pero no revierte
   colores parcialmente escritos por una pasada. Por eso no se reintenta en el mismo frame.

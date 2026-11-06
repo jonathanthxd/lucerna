@@ -29,18 +29,35 @@ public final class FarTerrainState {
 
     public FarTerrainState(RenderTargets targets) {
         width = targets.getCurrentWidth(); height = targets.getCurrentHeight();
-        depth = new DepthTexture(width, height, DepthBufferFormat.DEPTH24);
-        opaque = new DepthTexture(width, height, DepthBufferFormat.DEPTH24);
-        depthFramebuffer = depthFramebuffer(depth);
-        opaqueFramebuffer = depthFramebuffer(opaque);
+        DepthTexture newDepth = null, newOpaque = null;
+        GlFramebuffer newDepthFramebuffer = null, newOpaqueFramebuffer = null;
+        try {
+            newDepth = new DepthTexture(width, height, DepthBufferFormat.DEPTH24);
+            newOpaque = new DepthTexture(width, height, DepthBufferFormat.DEPTH24);
+            newDepthFramebuffer = depthFramebuffer(newDepth);
+            newOpaqueFramebuffer = depthFramebuffer(newOpaque);
+        } catch (RuntimeException | Error failure) {
+            if (newDepthFramebuffer != null) newDepthFramebuffer.destroy();
+            if (newOpaqueFramebuffer != null) newOpaqueFramebuffer.destroy();
+            if (newDepth != null) newDepth.destroy();
+            if (newOpaque != null) newOpaque.destroy();
+            throw failure;
+        }
+        depth = newDepth; opaque = newOpaque;
+        depthFramebuffer = newDepthFramebuffer; opaqueFramebuffer = newOpaqueFramebuffer;
     }
     private static GlFramebuffer depthFramebuffer(DepthTexture texture) {
         GlFramebuffer framebuffer = new GlFramebuffer();
-        framebuffer.addDepthAttachment(texture.getTextureId());
-        framebuffer.noDrawBuffers();
-        LucernaRenderSystem.readBuffer(framebuffer.getId(), GL11.GL_NONE);
-        if (!framebuffer.isComplete()) { framebuffer.destroy(); throw new IllegalStateException("Incomplete DH depth framebuffer"); }
-        return framebuffer;
+        try {
+            framebuffer.addDepthAttachment(texture.getTextureId());
+            framebuffer.noDrawBuffers();
+            LucernaRenderSystem.readBuffer(framebuffer.getId(), GL11.GL_NONE);
+            if (!framebuffer.isComplete()) throw new IllegalStateException("Incomplete DH depth framebuffer");
+            return framebuffer;
+        } catch (RuntimeException | Error failure) {
+            framebuffer.destroy();
+            throw failure;
+        }
     }
     public int depth() { return drawing ? opaque.getTextureId() : depth.getTextureId(); }
     public int opaqueDepth() { return opaque.getTextureId(); }
