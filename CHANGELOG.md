@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.5-tfl.1 (experimental, not a stable release)
+
+- Fix stale row focus and release handling when shader options rebuild during clicks.
+- Bound malformed shader menu column counts and diagnose invalid texture declarations.
+- Release shader/program GPU handles on compilation and link failures.
+- Add an opt-in native dh_terrain/dh_water VBO path with dedicated depth, render targets and versioned Lucerna-owned API.
+- TFL Core adapter, real LOD/GPU validation and Mellow 3.5 testing are still pending. See docs/TFL_FAR_TERRAIN.md and docs/VALIDATION_TFL.md.
+
 ## 0.1.4
 
 - Skip shader passes that packs turn off with number options

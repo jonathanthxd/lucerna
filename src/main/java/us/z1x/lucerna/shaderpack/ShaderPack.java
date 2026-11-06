@@ -295,6 +295,7 @@ public class ShaderPack {
             if (Files.exists(mcMetaResolvedPath)) {
                 try {
                     JsonObject meta = loadMcMeta(mcMetaResolvedPath);
+                    if (meta == null) throw new IOException("Empty texture metadata: " + mcMetaPath);
                     if (meta.get("texture") != null) {
                         if (meta.get("texture").getAsJsonObject().get("blur") != null) {
                             blur = meta.get("texture").getAsJsonObject().get("blur").getAsBoolean();

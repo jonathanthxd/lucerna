@@ -70,8 +70,8 @@ tasks.processResources {
 // These are executable dependency-free checks, not JUnit test classes.
 // A dedicated source set makes `check` run them without misconfiguring Gradle's Test task.
 val regression = sourceSets.create("regression") {
-    compileClasspath += sourceSets.main.get().output
-    runtimeClasspath += sourceSets.main.get().output
+    compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
+    runtimeClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
 }
 val regressionChecks = tasks.register<JavaExec>("regressionChecks") {
     dependsOn(tasks.named(regression.classesTaskName))
@@ -84,3 +84,10 @@ val farTerrainContractChecks = tasks.register<JavaExec>("farTerrainContractCheck
     mainClass = "us.z1x.lucerna.api.farterrain.FarTerrainContractRegression"
 }
 tasks.check { dependsOn(regressionChecks, farTerrainContractChecks) }
+
+val shaderSourceChecks = tasks.register<JavaExec>("shaderSourceChecks") {
+    dependsOn(tasks.named(regression.classesTaskName))
+    classpath = regression.runtimeClasspath
+    mainClass = "us.z1x.lucerna.api.farterrain.FarShaderRegression"
+}
+tasks.check { dependsOn(shaderSourceChecks) }
