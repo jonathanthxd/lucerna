@@ -13,6 +13,10 @@
   ausencia de fallback arbitrario, DRAWBUFFERS 04, AST de vértices/materiales,
   rechazo por profundidad nativa y caché de transformación. También comprueba
   que declaraciones raw defectuosas producen IOException recuperable.
+- `python tools/test-gl-cleanup.py`: 12 comprobaciones de inyección de fallos
+  sobre GlShader y ProgramCreator reales, con llamadas GL simuladas. Verifica
+  eliminación de handles al fallar source/compile/attach/link y propiedad en éxito.
+  No mide fugas del driver ni ejecuta OpenGL real.
 - `git diff --check`: sin errores al preparar los cambios.
 - El build local completo no pudo descargar Gradle 9.7.0 por red y no tiene
   JDK 25 configurado; esa verificación se lleva a GitHub Actions.

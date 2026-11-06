@@ -91,3 +91,8 @@ val shaderSourceChecks = tasks.register<JavaExec>("shaderSourceChecks") {
     mainClass = "us.z1x.lucerna.api.farterrain.FarShaderRegression"
 }
 tasks.check { dependsOn(shaderSourceChecks) }
+
+val shaderCleanupChecks = tasks.register<Exec>("shaderCleanupChecks") {
+    commandLine(if (System.getProperty("os.name").lowercase().contains("windows")) "python" else "python3", "tools/test-gl-cleanup.py")
+}
+tasks.check { dependsOn(shaderCleanupChecks) }

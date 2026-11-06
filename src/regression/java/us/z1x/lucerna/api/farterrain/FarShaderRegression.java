@@ -23,6 +23,7 @@ public final class FarShaderRegression {
         }
     }
     public static void main(String[] args) throws Exception {
+        System.setProperty("lucerna.prettyPrintShaders", "true");
         System.setProperty("lucerna.experimentalFarTerrain", "true");
         check(ShaderPackSourceNames.POTENTIAL_STARTS.contains("dh_terrain.vsh"));
         check(ShaderPackSourceNames.POTENTIAL_STARTS.contains("dh_water.fsh"));

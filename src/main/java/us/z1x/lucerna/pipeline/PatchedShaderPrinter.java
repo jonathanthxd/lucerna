@@ -12,8 +12,9 @@ import java.util.stream.Stream;
 public class PatchedShaderPrinter {
     private static boolean outputLocationCleared = false;
     private static int programCounter = 0;
-    public static final boolean PRETTY_PRINT_SHADERS = FabricLoader.getInstance().isDevelopmentEnvironment()
-            || System.getProperty("lucerna.prettyPrintShaders", "false").equals("true");
+    // An explicit override also permits offline AST tools to run before Fabric has a launcher.
+    public static final boolean PRETTY_PRINT_SHADERS = Boolean.getBoolean("lucerna.prettyPrintShaders")
+            || FabricLoader.getInstance().isDevelopmentEnvironment();
 
     public static void resetPrintState() {
         outputLocationCleared = false;
