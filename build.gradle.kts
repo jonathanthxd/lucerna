@@ -96,3 +96,11 @@ val shaderCleanupChecks = tasks.register<Exec>("shaderCleanupChecks") {
     commandLine(if (System.getProperty("os.name").lowercase().contains("windows")) "python" else "python3", "tools/test-gl-cleanup.py")
 }
 tasks.check { dependsOn(shaderCleanupChecks) }
+
+val samplerRegistrationChecks = tasks.register<JavaExec>("samplerRegistrationChecks") {
+    dependsOn(tasks.named(regression.classesTaskName))
+    classpath = regression.runtimeClasspath
+    mainClass = "us.z1x.lucerna.samplers.SamplerRegistrationRegression"
+    args(layout.buildDirectory.file("reports/sampler-cases.json").get().asFile.absolutePath)
+}
+tasks.check { dependsOn(samplerRegistrationChecks) }

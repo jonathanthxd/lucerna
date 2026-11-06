@@ -86,20 +86,30 @@ public class ProgramSamplers {
         private final ImmutableList.Builder<SamplerBinding> samplers;
         private final ImmutableList.Builder<ValueUpdateNotifier> notifiersToReset;
         private final List<GlUniform1iCall> calls;
+        private final java.util.function.ToIntFunction<String> uniformLocation;
+        private final int maxTextureUnits;
         private int remainingUnits;
         private int nextUnit;
 
         private Builder(int program, Set<Integer> reservedTextureUnits) {
+            this(program, reservedTextureUnits, SamplerLimits.get().getMaxTextureUnits(),
+                name -> LucernaRenderSystem.getUniformLocation(program, name));
+        }
+
+        Builder(int program, Set<Integer> reservedTextureUnits, int maxTextureUnits,
+                java.util.function.ToIntFunction<String> uniformLocation) {
             this.program = program;
+            this.uniformLocation = java.util.Objects.requireNonNull(uniformLocation);
+            if (maxTextureUnits <= 0) throw new IllegalArgumentException("Texture unit limit must be positive");
+            this.maxTextureUnits = maxTextureUnits;
             this.reservedTextureUnits = ImmutableSet.copyOf(reservedTextureUnits);
             this.samplers = ImmutableList.builder();
             this.notifiersToReset = ImmutableList.builder();
             this.calls = new ArrayList<>();
 
-            int maxTextureUnits = SamplerLimits.get().getMaxTextureUnits();
 
             for (int unit : reservedTextureUnits) {
-                if (unit >= maxTextureUnits) {
+                if (unit < 0 || unit >= maxTextureUnits) {
                     throw new IllegalStateException("Cannot mark texture unit " + unit + " as reserved because that " +
                             "texture unit isn't available on this system! Only " + maxTextureUnits +
                             " texture units are available.");
@@ -122,7 +132,7 @@ public class ProgramSamplers {
             }
 
             for (String name : names) {
-                int location = LucernaRenderSystem.getUniformLocation(program, name);
+                int location = uniformLocation.applyAsInt(name);
 
                 if (location == -1) {
                     continue;
@@ -134,7 +144,7 @@ public class ProgramSamplers {
 
         @Override
         public boolean hasSampler(String name) {
-            return LucernaRenderSystem.getUniformLocation(program, name) != -1;
+            return uniformLocation.applyAsInt(name) != -1;
         }
 
         @Override
@@ -159,14 +169,16 @@ public class ProgramSamplers {
 
         private boolean addDynamicSampler(IntSupplier sampler, boolean used, ValueUpdateNotifier notifier, String... names) {
             for (String name : names) {
-                int location = LucernaRenderSystem.getUniformLocation(program, name);
+                int location = uniformLocation.applyAsInt(name);
 
                 if (location == -1) {
                     continue;
                 }
 
                 if (remainingUnits <= 0) {
-                    throw new IllegalStateException("No more available texture units while activating sampler " + name);
+                    throw new IllegalStateException("No more available texture units while activating sampler " + name
+                        + " in program " + program + "; usable limit=" + maxTextureUnits
+                        + ", reserved=" + reservedTextureUnits);
                 }
 
                 calls.add(new GlUniform1iCall(location, nextUnit));
@@ -248,11 +260,9 @@ public class ProgramSamplers {
             IntSupplier override = getOverride(null, names);
 
             if (override != null) {
-                if (textureUnit == 0) {
-                    samplerHolder.addDefaultSampler(override, names);
-                } else {
-                    samplerHolder.addDynamicSampler(override, names);
-                }
+                // An override is owned by this program, not by Minecraft's external unit.
+                // In world passes unit 0 is reserved, so it cannot be a new default sampler.
+                samplerHolder.addDynamicSampler(override, names);
             } else {
                 samplerHolder.addExternalSampler(textureUnit, names);
             }
