@@ -22,6 +22,19 @@ public final class SamplerFixture {
             return result;
         } catch (ReflectiveOperationException failure) { throw new AssertionError(failure); }
     }
+    public int suppliedTexture(int unit) {
+        try {
+            var field = ProgramSamplers.class.getDeclaredField("samplerBindings"); field.setAccessible(true);
+            for (Object binding : (Iterable<?>) field.get(builder.build())) {
+                var index = binding.getClass().getDeclaredField("textureUnit"); index.setAccessible(true);
+                if ((int) index.get(binding) == unit) {
+                    var texture = binding.getClass().getDeclaredField("texture"); texture.setAccessible(true);
+                    return ((java.util.function.IntSupplier) texture.get(binding)).getAsInt();
+                }
+            }
+            throw new AssertionError("Missing binding " + unit);
+        } catch (ReflectiveOperationException failure) { throw new AssertionError(failure); }
+    }
     public static int effectiveLimit(int fragment, int combined, int cache) {
         try {
             var method = us.z1x.lucerna.gl.sampler.SamplerLimits.class.getDeclaredMethod("effectiveTextureUnits", int.class, int.class, int.class);

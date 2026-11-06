@@ -75,6 +75,7 @@ public final class SamplerRegistrationRegression {
         check(custom.assignments().get("customtex0")==3);
         check(custom.assignments().get("dhDepthTex0")==4);
         check(custom.assignments().get("dhDepthTex1")==5);
+        check(custom.suppliedTexture(0)==502 && custom.suppliedTexture(3)==501);
         nativeCase("custom-textures",custom.assignments());
         var world=new SamplerFixture(8,Set.of(0,1,2),"colortex4","dhDepthTex0","dhDepthTex1","tex","lightmap");
         register(world.builder,false);
@@ -87,6 +88,7 @@ public final class SamplerRegistrationRegression {
         var intercepted=ProgramSamplers.customTextureSamplerInterceptor(override.builder,textures);
         register(intercepted,false);intercepted.addExternalSampler(0,"tex");
         check(override.assignments().get("tex")==6);
+        check(override.suppliedTexture(6)==503);
         nativeCase("world-external-zero-override",override.assignments());
         var full=new SamplerFixture(8,Set.of(1,2),"colortex0","dhDepthTex0","dhDepthTex1","a","b","c","overflow");
         register(full.builder,true);

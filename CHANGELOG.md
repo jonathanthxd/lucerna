@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.5-tfl.2 (experimental)
+
+- Fix DH depth samplers consuming composite/final/deferred default texture unit 0. Register the default and color targets first across graphics and compute paths.
+- Allocate custom overrides of external Minecraft textures dynamically, including reserved unit 0.
+- Bound units by fragment, combined and engine-cache limits; diagnose exhaustion and invalid reservations.
+- Add original Mellow 3.5 active-sampler fixtures, allocator regressions and native EGL postprocess tests.
+- Keep experimental LOD and shaderless fallback unchanged; full Minecraft/LOD validation remains pending.
+
 ## 0.1.5-tfl.1 (experimental, not a stable release)
 
 - Fix stale row focus and release handling when shader options rebuild during clicks.

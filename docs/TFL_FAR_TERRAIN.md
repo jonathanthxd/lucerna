@@ -2,7 +2,7 @@
 
 ## Estado y alcance
 
-Candidata `0.1.5-tfl.1`, sobre Lucerna `0.1.4` / commit base
+Candidata `0.1.5-tfl.2`, sobre Lucerna `0.1.4` / commit base
 `ba8b45059e13d6ac8e3a5bf85024f4b61f4eef9f`. Rama de recuperación:
 `checkpoint/pre-tfl-far-terrain-ba8b450`. No fusionar aún a `main`.
 
@@ -11,8 +11,9 @@ programas `dh_terrain`/`dh_water` mediante el pipeline GLSL existente y ejecuta
 `glDrawArrays` contra los destinos declarados por el shaderpack. No se usa
 `gbuffers_terrain` como sustituto. Esto NO demuestra todavía que los LOD reales
 de TFL Core se hayan dibujado con éxito: el consumidor actual no llama a esta API
-ni tiene el formato de vértice requerido. No se ejecutó Minecraft ni una prueba
-GPU en esta tarea. El interruptor experimental está desactivado por defecto.
+ni tiene el formato de vértice requerido. No se ejecutó Minecraft. En tfl.2 se
+añadieron pruebas OpenGL nativas de samplers/postprocesado en Mesa, sin geometría
+LOD ni escena Minecraft; ver SAMPLER_REGRESSION_TFL_2.md. El interruptor experimental está desactivado por defecto.
 
 ## Auditoría reproducible
 
@@ -26,7 +27,8 @@ GPU en esta tarea. El interruptor experimental está desactivado por defecto.
 - Contrato oficial: [ShaderDoc: DH](https://github.com/IrisShaders/ShaderDoc/blob/ddf473726710c6504422d192784c1652f8aece98/dh-support.md).
 - Shaderpack real inspeccionado: [Complementary Reimagined c09950d](https://github.com/ComplementaryDevelopment/ComplementaryReimagined/tree/c09950df0650b27dac260c1b0f69afc11387aa6f),
   `shaders/program/dh_terrain.glsl`, `dh_water.glsl` y wrappers de dimensiones.
-  Mellow 3.5 no se obtuvo en este entorno; no se declara validación específica de Mellow.
+  En tfl.2 se inspeccionó y compiló el ZIP original Mellow 3.5; el alcance exacto
+  y su SHA-256 están documentados en SAMPLER_REGRESSION_TFL_2.md.
   No se copiaron shaders de esos proyectos al JAR.
 
 ### Pipeline Lucerna
@@ -155,7 +157,7 @@ No se modificó TFLClientMOD en esta tarea.
 **Para probar GUI/estabilidad:** Java 25, Minecraft 1.8.9, Ornithe Gen2,
 Argentum 1.0.2, Legacy LWJGL3 1.4.10 y las demás dependencias habituales.
 Cerrar Minecraft, guardar el JAR anterior fuera de `mods`, y reemplazarlo por
-`lucerna-0.1.5-tfl.1.jar` remapeado del artefacto de Actions del PR. Dejar un solo
+`lucerna-0.1.5-tfl.2.jar` remapeado del artefacto de Actions del PR. Dejar un solo
 JAR de Lucerna. No usar el JAR `-dev` ni cambiar Argentum/LWJGL3.
 La compilación conserva Fabric Loader 0.19.5 como dependencia de desarrollo;
 la validación con el loader 0.20.1 del usuario queda en la matriz manual.

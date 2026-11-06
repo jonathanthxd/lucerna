@@ -10,7 +10,9 @@ Based on [Iris](https://github.com/IrisShaders/Iris) and Celeritas.
 
 ## TFL experimental branch
 
-`0.1.5-tfl.1` adds shader menu stability fixes and an opt-in DH pipeline.
+`0.1.5-tfl.2` fixes the DH/composite texture-unit-0 regression in `tfl.1`,
+preserves shader menu stability fixes and keeps the DH pipeline opt-in.
+See [sampler regression evidence](docs/SAMPLER_REGRESSION_TFL_2.md).
 The TFL Core renderer adapter and in-game validation remain pending.
 See [integration contract](docs/TFL_FAR_TERRAIN.md) and [validation](docs/VALIDATION_TFL.md).
 Do not enable the experimental JVM property with an unmodified TFL Core renderer.
